@@ -52,6 +52,7 @@ public class CustomerController implements Initializable {
     @FXML private Button btClear;
     @FXML private Button btDisplayMain;
     @FXML private Button btDeleteCus;
+    @FXML private Button btSearchCus;
     // TableView
     @FXML private TableView<Customer> tableViewCustomer;
     @FXML private TableColumn<Customer, String> colCusId;
@@ -84,6 +85,7 @@ public class CustomerController implements Initializable {
         // Set up columns in Customer tableView 
         colCusId.setCellValueFactory(new PropertyValueFactory<>("customerId")); // customerId is how it is named in the Database
         colName.setCellValueFactory(new PropertyValueFactory<>("customerName"));
+        
         colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
         colAddress2.setCellValueFactory(new PropertyValueFactory<>("adress2"));
         colCity.setCellValueFactory(new PropertyValueFactory<>("city"));
@@ -127,7 +129,9 @@ public class CustomerController implements Initializable {
     
     // Updating a customer
     @FXML private void onActionUpdateCus(ActionEvent event) {
-        // save textfields with new updated data
+        DBQuery.customerList.clear();
+        
+        // get user input for textfields
         String customerId = txtCusId.getText();
         String name = txtName.getText();
         String address = txtAddress.getText();
@@ -138,32 +142,51 @@ public class CustomerController implements Initializable {
         String cityId = DBQuery.getCityId(coCity); 
         String postalCode = txtPostalCode.getText();
         String phone = txtPhone.getText();
-
-        populateTableview();
+        
+        
+        
+//        DBQuery.updateCustomer(customerId, name);
+//        DBQuery.getAddressId(addressId);
+//        DBQuery.updateAddress(address, address2, cityId, postalCode, phone);
+//                
+//        displayCustomers();
         
     }
 
     @FXML private void onActionDeleteCus(ActionEvent event) {
         // select customer
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you really want to delete this part?");
-        alert.setTitle("Deletion");
+        Customer deleteCus = tableViewCustomer.getSelectionModel().getSelectedItem();
+        String customerId = deleteCus.getCustomerId();
+
+
+        
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you really want to delete this costume?");
+        alert.setTitle("Delete Customer");
         Optional<ButtonType> result = alert.showAndWait();
         if(result.isPresent() && result.get() == ButtonType.OK) {
-            
-            // DOES NOT DO A FULL DELETE YET
-            DBQuery.getAllCustomers().remove(tableViewCustomer.getSelectionModel().getSelectedItem());
+        //call delete Customer method and pass in value
+        DBQuery.deleteCustomer(customerId);
+        // refresh customer list and load tableview again
+        DBQuery.customerList.clear();        
+        displayCustomers();
         }
+
     }
 
     // Displays the MainScreen
     @FXML private void onActionDisplayMain(ActionEvent event) throws IOException {
+        DBQuery.customerList.clear();
+        DBQuery.cityList.clear();
+        
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/MainScreen.fxml"));
         stage.setScene(new Scene(scene));
         stage.show();
     }
+    
 
-    // Clears all textfields
+
+    // Clears all textfields but does not delete them
     @FXML private void onActionClear(ActionEvent event) {
             txtCusId.setText("");
             txtName.setText("");
@@ -173,6 +196,7 @@ public class CustomerController implements Initializable {
             txtPostalCode.setText("");
             txtPhone.setText("");    
     }
+
     
     
     // Populate textfields by selecting a customer in the tableview
@@ -211,9 +235,19 @@ public class CustomerController implements Initializable {
             txtPhone.setText(populatedCostumer.getPhone());                 
         } catch(Exception e) {
             System.out.println("Error editing customer: " + e.getMessage()); 
-
         }
         return null;
     }  
+    
+    public static Customer lookupName(String search) {
+        if (!DBQuery.customerList.isEmpty()) {
+            for(Customer cus : DBQuery.customerList) {
+                if(cus.getCustomerName().equalsIgnoreCase(search)) {
+                    return cus;
+                }
+            }
+        }
+        return null;
+    }
 
 }
