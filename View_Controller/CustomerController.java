@@ -78,8 +78,8 @@ public class CustomerController implements Initializable {
         // TODO
         // Set Auto-Generated CustomerID
 
-        // Populate Customer tableView
-        tableViewCustomer.setItems(DBQuery.getAllCustomers());
+        // Display all Customers in the Tableview
+        displayCustomers();
         
         // Set up columns in Customer tableView 
         colCusId.setCellValueFactory(new PropertyValueFactory<>("customerId")); // customerId is how it is named in the Database
@@ -93,45 +93,52 @@ public class CustomerController implements Initializable {
         
         // Display ComboBox Cities
         comboCity.setItems(DBQuery.getAllCities());   
-
+        
+        
     }    
     
     
     // Adding a new customer
     @FXML private void onActionAddCus(ActionEvent event) {
+        //clear() method is used to remove all the elements from a Set not to delete them.
+        DBQuery.customerList.clear();
         // User input textfields
         String name = txtName.getText();
         String address = txtAddress.getText();
         String address2 = txtAddress2.getText();
-        String coCity = comboCity.getValue().toString(); // get String value from comboCity selection
-        String cityId = DBQuery.getCityId(coCity); // get cityId based on coCity value
+        // get String value from comboCity selection
+        String coCity = comboCity.getValue().toString(); 
+        // get cityId based on coCity value
+        String cityId = DBQuery.getCityId(coCity); 
         String postalCode = txtPostalCode.getText();
         String phone = txtPhone.getText();
         String addressId = null;
-                
-        DBQuery.addAddress(address, address2, cityId, postalCode, phone); // pass input textfields to addAddress method    
-        addressId = DBQuery.getAddressIdFromLastCustomerAdded(); // get addressId from last added address
-        DBQuery.addCustomer(name, addressId); // pass customerName and associated addressId
+        
+        // pass input textfields to addAddress method        
+        DBQuery.addAddress(address, address2, cityId, postalCode, phone); 
+        // get addressId from last added address
+        addressId = DBQuery.getAddressIdFromLastCustomerAdded();
+        // pass customerName and associated addressId
+        DBQuery.addCustomer(name, addressId); 
+        // Populate Customer tableView
+        displayCustomers();
     }
     
     
     // Updating a customer
     @FXML private void onActionUpdateCus(ActionEvent event) {
         // save textfields with new updated data
+        String customerId = txtCusId.getText();
         String name = txtName.getText();
         String address = txtAddress.getText();
         String address2 = txtAddress2.getText();
-        String coCity = comboCity.getValue().toString(); // get String value from comboCity selection
-        String cityId = DBQuery.getCityId(coCity); // get cityId based on coCity value
+        // get String value from comboCity selection
+        String coCity = comboCity.getValue().toString(); 
+        // get cityId based on coCity value
+        String cityId = DBQuery.getCityId(coCity); 
         String postalCode = txtPostalCode.getText();
         String phone = txtPhone.getText();
-        String addressId = null;
-        
-        DBQuery.updateCustomer(name, addressId);
-        addressId = DBQuery.getAddressIdFromLastCustomerAdded();
-        DBQuery.updateAddress(address, address2, cityId, postalCode, phone); // pass updated textfield intpu to updateAddressmethod
-        
-        
+
         populateTableview();
         
     }
@@ -148,7 +155,7 @@ public class CustomerController implements Initializable {
         }
     }
 
-    
+    // Displays the MainScreen
     @FXML private void onActionDisplayMain(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/MainScreen.fxml"));
@@ -156,8 +163,15 @@ public class CustomerController implements Initializable {
         stage.show();
     }
 
-    
+    // Clears all textfields
     @FXML private void onActionClear(ActionEvent event) {
+            txtCusId.setText("");
+            txtName.setText("");
+            txtAddress.setText("");
+            txtAddress2.setText("");
+            comboCity.setValue("");
+            txtPostalCode.setText("");
+            txtPhone.setText("");    
     }
     
     
@@ -179,8 +193,13 @@ public class CustomerController implements Initializable {
         }
     }
     
-    public String populateTableview() {
-        // populate textfields with data
+    // Populate Customer tableView
+    public void displayCustomers() {        
+        tableViewCustomer.setItems(DBQuery.getAllCustomers());
+    }
+   
+    // populate textfields with data for updateCustomer method
+    public String populateTableview() {        
         try {    
             Customer populatedCostumer = tableViewCustomer.getSelectionModel().getSelectedItem();
             txtCusId.setText(populatedCostumer.getCustomerId());
@@ -189,9 +208,9 @@ public class CustomerController implements Initializable {
             txtAddress2.setText(populatedCostumer.getAddress2());
             comboCity.setValue(populatedCostumer.getCity());
             txtPostalCode.setText(populatedCostumer.getPostalCode());
-            txtPhone.setText(populatedCostumer.getPhone());     
+            txtPhone.setText(populatedCostumer.getPhone());                 
         } catch(Exception e) {
-                System.out.println("Error editing customer: " + e.getMessage());   
+            System.out.println("Error editing customer: " + e.getMessage()); 
 
         }
         return null;
