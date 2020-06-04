@@ -29,8 +29,11 @@ public class DBQuery {
     
     public static ObservableList<String> cityList = FXCollections.observableArrayList();
     public static ObservableList<Customer> customerList = FXCollections.observableArrayList();
+
+//--------------------------------------------------------    
+//////////////////// User login Screen ////////////////////
+//--------------------------------------------------------    
     
-// User login Screen
     public static boolean checkLogin(String userNameInput, String passwordInput) {
         String sqlStmt = "SELECT userName, password FROM user WHERE userName = ? && password = ?";  // ? is a placeholder value
         try {
@@ -56,10 +59,13 @@ public class DBQuery {
                 return false;
         }
     }
-    
+//--------------------------------------------------------      
 //////////////////// CUSTOMER SCREEN ////////////////////
+//--------------------------------------------------------      
     
-////////// populate city comboBox //////////
+    
+////////// POPULATE CITY COMBOBOX //////////
+    
     public static ObservableList<String> getAllCities()  {
         String sqlStmt = "SELECT city FROM city";
         try {      
@@ -79,7 +85,8 @@ public class DBQuery {
     }
     
 
-////////// get cityId //////////
+////////// GET CITY ID  //////////
+    
     public static String getCityId(String city) {
     String sqlStmt = "SELECT cityId FROM city WHERE city = ?"; // ? is a placeholder value
         rs = null;
@@ -101,29 +108,9 @@ public class DBQuery {
         return null;
     }
     
-////////// get addressId //////////    
-    public static String getAddressId(String id) {
-    String sqlStmt = "SELECT addressId FROM address WHERE addressId = ?"; // ? is a placeholder value
-        rs = null;
-        String addressId;
-        
-        try {
-            conn = DBConnection.getConnection();
-            ps = conn.prepareStatement(sqlStmt);
-            ps.setString(1, id); // replaces first ? in SQL statement
-            rs  = ps.executeQuery(); // submits entire SQL statement
-            
-            while (rs.next()) {
-                addressId = rs.getString("addressId"); // getting the SQL results which is the cityId column
-                return addressId;
-            }
-        } catch (SQLException e) {
-            System.out.println("Check your getAddressId SQL code");        
-        }
-        return null;
-    }    
 
-////////// get addressId from last customer added //////////    
+////////// GET ADDRESSID FROM LAST ADDED CUSTOMER //////////    
+    
     public static String getAddressIdFromLastCustomerAdded() {
     String sqlStmt = "SELECT addressId FROM address Order By addressId DESC Limit 1"; // ? is a placeholder value
         rs = null;
@@ -143,7 +130,9 @@ public class DBQuery {
         return null;
     }
     
-////////// get Customer Info for Tableview //////////
+    
+////////// GET CUSTOMER INFO //////////
+    
 public static ObservableList<Customer> getAllCustomers() {
     String sqlStmt = "SELECT customerId, customerName, address, address2, city, postalCode, country, phone\n" +            
         "FROM customer cu\n" + 
@@ -176,7 +165,8 @@ public static ObservableList<Customer> getAllCustomers() {
        
     
     
-////////// Add Address //////////
+////////// ADD ADDRESS //////////
+
     public static String addAddress(String address, String address2, String cityId, String postalCode, String phone) { // passing in addressDB table input fields
         String sqlStmt = "INSERT INTO address (address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, ?, ?, ?, now(), 'test', now(), 'test')";
         
@@ -197,7 +187,8 @@ public static ObservableList<Customer> getAllCustomers() {
         return null;
     }
     
-////////// Add Customer //////////
+////////// ADD CUSTOMER //////////
+    
     public static String addCustomer(String customerName, String addressId) { // passing in customerDB table input fields
         String sqlStmt = "INSERT INTO customer (customerName, addressId, active, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, '1', now(), 'test', now(), 'test')";
         
@@ -214,131 +205,84 @@ public static ObservableList<Customer> getAllCustomers() {
     }    
    
     
-////////// Update Customer //////////
-    public static void updateCustomer(Customer customer) throws SQLException {
-        String sqlStmt = "UPDATE customer SET customerName = ?, addressId = ?, active = '1', createDate = now(), createdBy = 'test', lastUpdate = now(), lastUpdateBy = 'test' WHERE customerId = ?";
+////////// UPDATE CUSTOMER //////////
     
-        try {
-            
-            conn = DBConnection.getConnection();
-            ps = conn.prepareStatement(sqlStmt);
-            ps.setString(1, "customerName");
-            ps.setString(2, "addressId");
-            ps.setString(3, "customerId");
-            ps.executeUpdate(); // submits entire SQL statement
-            
-        }catch (SQLException e) {
-            System.out.println("update customer sql error: " + e.getMessage());
-        }
-    }    
+public static void updateCustomer(String customerId, String name, String address, String address2, String cityId, String postalCode, String phone) throws SQLException {
+    
+    try{            
+        String sqlStmt1 = "UPDATE customer SET customerName = ? WHERE customerId = ?;";    
+        conn = DBConnection.getConnection();
+        ps = conn.prepareStatement(sqlStmt1);
+        ps.setString(1, name);    
+        ps.setString(2, customerId); 
+        ps.execute();  
+    
+    
+        String sqlStmt2 = "SELECT addressId FROM customer WHERE customerId = ?";
+        conn = DBConnection.getConnection();
+        ps = conn.prepareStatement(sqlStmt2);
+        ps.setString(1, customerId); 
+        rs = ps.executeQuery(); // submits entire SQL statement
+        String addressId = null;
+            while(rs.next()) {
+                addressId = rs.getString(1);
+            }      
+    
+    
+        String sqlStmt3 = "UPDATE address SET address = ?, address2 = ?, cityId = ?, postalCode = ?, phone = ? WHERE addressId = ?";
+        conn = DBConnection.getConnection();
+        ps = conn.prepareStatement(sqlStmt3);
 
-    
-////////// Update Address //////////
-    public static String updateAddress(String address, String address2, String cityId, String postalCode, String phone) {
-        String sqlStmt = "UPDATE address SET address = ?, address2 = ?, cityId = ?, postalCode = ?, phone = ?, createDate = now(), createdBy = 'test', lastUpdate = now(), lastUpdateBy = 'test' WHERE addressId = ?";
-        try {
-            
-            conn = DBConnection.getConnection();
-            ps = conn.prepareStatement(sqlStmt);
-            String Id = null;
-            //set preparedStatement paramters
-            ps.setString(1, address);
-            ps.setString(2, address2);
-            ps.setString(3, cityId);
-            ps.setString(4, postalCode);
-            ps.setString(5, phone);
-            ps.setString(6, Id);
-
-            // call execute Update to execute SQL update statement
-            ps.executeUpdate(); // submits entire SQL statement
-            
-        } catch (SQLException e) {
-            System.out.println("update address sql error: " + e.getMessage());
-        }
-        return null;        
-    }
-    
-    
-public static void editCustomer(String customerId, String name, String address, String address2, String cityId, String postalCode, String phone) throws SQLException {
-    
-    try{
-            
-    String sqlStmt1 = "UPDATE customer SET customerName = ? WHERE customerId = ?;";    
-    conn = DBConnection.getConnection();
-    ps = conn.prepareStatement(sqlStmt1);
-    ps.setString(1, name);    
-    ps.setString(2, customerId); 
-        System.out.println("Name " + name);
-        System.out.println("CustomerId " + customerId);
-    ps.execute();
-  
-    
-    
-    String sqlStmt2 = "SELECT addressId FROM customer WHERE customerId = ?";
-    conn = DBConnection.getConnection();
-    ps = conn.prepareStatement(sqlStmt2);
-    ps.setString(1, customerId); 
-    rs = ps.executeQuery(); // submits entire SQL statement
-
-    String addressId = null;
-     while(rs.next()) {
-            addressId = rs.getString(1);
-     }
-        System.out.println("AddressId" + addressId);
-    
-    
-    String sqlStmt3 = "UPDATE address SET address = ?, address2 = ?, cityId = ?, postalCode = ?, phone = ? WHERE addressId = ?";
-    conn = DBConnection.getConnection();
-    ps = conn.prepareStatement(sqlStmt3);
-
-    ps.setString(1, address);    
-    ps.setString(2, address2);
-    ps.setString(3, cityId);
-    ps.setString(4, postalCode);
-    ps.setString(5, phone);   
-    ps.setString(6, addressId);
-
-    ps.execute();
-
-
+        ps.setString(1, address);    
+        ps.setString(2, address2);
+        ps.setString(3, cityId);
+        ps.setString(4, postalCode);
+        ps.setString(5, phone);   
+        ps.setString(6, addressId);
+        ps.execute();
+        
     } catch(SQLException e) {
-            System.out.println("SQL ERROR");
-            System.out.println(e.getMessage()); 
-    }
-    
-
-
-    
+            System.out.println("SQL ERROR:" + e.getMessage());
+    }       
 }
     
     
-////////// Delete Address //////////    
-    public static String deleteAddress(String addressId) {
-        String sqlStmt = "DELETE FROM address WHERE addressId = ?";
-        try {
-            conn = DBConnection.getConnection();
-            ps = conn.prepareStatement(sqlStmt);
-            ps.setString(1, addressId);
-            ps.executeUpdate(); // submits update 
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return null;
-        }
+////////// DELETE CUSTOMER AND ASSOCIATED ADDRESS //////////
 
-////////// Delete Customer //////////    
     public static String deleteCustomer(String customerId) {
-        String sqlStmt = "DELETE FROM customer WHERE customerId = ?";
         try {
+            // Uses CustomerID to lookup Address ID from CustomerDB table
+            String addressId = null;
+            String sqlStmt1 = "SELECT addressId FROM customer WHERE customerId = ?";
+
             conn = DBConnection.getConnection();
-            ps = conn.prepareStatement(sqlStmt);
+            ps = conn.prepareStatement(sqlStmt1);
+            ps.setString(1, customerId); 
+            rs = ps.executeQuery(); // submits entire SQL statement
+                
+                while(rs.next()) { // assign rs to addressID for sqlStmt3 ? variable
+                    addressId = rs.getString(1);
+                }            
+
+            // Delete CustomerID first as it's the parent to the AddressDB table
+            String sqlStmt2 = "DELETE FROM customer WHERE customerId = ?";
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt2);
             ps.setString(1, customerId);
             ps.executeUpdate(); // submits update 
+                
+            // Since parent key refrence has been deleted, we can now delete the associated addressID from the AddressDB table
+            String sqlStmt3 = "DELETE FROM address WHERE addressId = ?";                 
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt3);
+            ps.setString(1, addressId);
+            ps.executeUpdate(); // submits delete 
+
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
         return null;
-        }    
+    }    
    
     
 }
