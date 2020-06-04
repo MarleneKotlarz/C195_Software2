@@ -14,37 +14,33 @@ public class Customer {
     String customerName;
     String address;
     String address2;
-    String postalCode;
-    String phone;
     String city;
+    String postalCode;
     String country;
+    String phone;
 
     
     
     // Add Customer Constructor
-    public Customer(String customerId, String customerName, String address, String address2, String postalCode, String phone, String city, String country) {
+    public Customer(String customerId, String customerName, String address, String address2, String city, String postalCode, String country, String phone) {
         this.customerId = customerId;
         this.customerName = customerName;
         this.address = address;
         this.address2 = address2;
-        this.postalCode = postalCode;
-        this.phone = phone;
         this.city = city;
+        this.postalCode = postalCode;
         this.country = country;
+        this.phone = phone;       
     }
+    
+
 
     // City ComboBox Constructor
     public Customer(String city) {
         this.city = city;
     }
     
-    
-    
-    
-    
 
-    
-    
     public String getCustomerId() {
         return customerId;
     }
