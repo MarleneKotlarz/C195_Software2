@@ -5,6 +5,7 @@
  */
 package utils;
 
+import Model.Address;
 import Model.Customer;
 import Model.User;
 import java.sql.Connection;
@@ -100,8 +101,29 @@ public class DBQuery {
         return null;
     }
     
-
 ////////// get addressId //////////    
+    public static String getAddressId(String id) {
+    String sqlStmt = "SELECT addressId FROM address WHERE addressId = ?"; // ? is a placeholder value
+        rs = null;
+        String addressId;
+        
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt);
+            ps.setString(1, id); // replaces first ? in SQL statement
+            rs  = ps.executeQuery(); // submits entire SQL statement
+            
+            while (rs.next()) {
+                addressId = rs.getString("addressId"); // getting the SQL results which is the cityId column
+                return addressId;
+            }
+        } catch (SQLException e) {
+            System.out.println("Check your getAddressId SQL code");        
+        }
+        return null;
+    }    
+
+////////// get addressId from last customer added //////////    
     public static String getAddressIdFromLastCustomerAdded() {
     String sqlStmt = "SELECT addressId FROM address Order By addressId DESC Limit 1"; // ? is a placeholder value
         rs = null;
@@ -123,7 +145,7 @@ public class DBQuery {
     
 ////////// get Customer Info for Tableview //////////
 public static ObservableList<Customer> getAllCustomers() {
-    String sqlStmt = "SELECT customerId, customerName, address, address2, city, postalCode, country, phone\n" +
+    String sqlStmt = "SELECT customerId, customerName, address, address2, city, postalCode, country, phone\n" +            
         "FROM customer cu\n" + 
         "INNER JOIN address ad ON cu.addressId = ad.addressId\n" +
         "INNER JOIN city ci ON ad.cityId = ci.cityId\n" +
@@ -144,6 +166,7 @@ public static ObservableList<Customer> getAllCustomers() {
             String phone = rs.getString("phone");
             // add variables to the customerList for the Customer tableview in Customer controller                
             customerList.add(new Customer(id, name, add, add2, city, zip, country, phone));
+
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -192,44 +215,101 @@ public static ObservableList<Customer> getAllCustomers() {
    
     
 ////////// Update Customer //////////
-    public static String updateCustomer(String customerName, String addressId) {
+    public static void updateCustomer(Customer customer) throws SQLException {
         String sqlStmt = "UPDATE customer SET customerName = ?, addressId = ?, active = '1', createDate = now(), createdBy = 'test', lastUpdate = now(), lastUpdateBy = 'test' WHERE customerId = ?";
     
         try {
+            
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
-            ps.setString(1,customerName);
-            ps.setString(2, addressId);
-            ps.executeUpdate(); // submits update 
-        } catch (SQLException e) {
-            System.out.println("update customer sql error");
-            System.out.println(e.getMessage());
+            ps.setString(1, "customerName");
+            ps.setString(2, "addressId");
+            ps.setString(3, "customerId");
+            ps.executeUpdate(); // submits entire SQL statement
+            
+        }catch (SQLException e) {
+            System.out.println("update customer sql error: " + e.getMessage());
         }
-        return null;
     }    
 
     
 ////////// Update Address //////////
-    public static String updateAddress(String address, String address2, String cityId, String postalCode, String phone ) {
+    public static String updateAddress(String address, String address2, String cityId, String postalCode, String phone) {
         String sqlStmt = "UPDATE address SET address = ?, address2 = ?, cityId = ?, postalCode = ?, phone = ?, createDate = now(), createdBy = 'test', lastUpdate = now(), lastUpdateBy = 'test' WHERE addressId = ?";
         try {
+            
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
-            ps.setString(1,address);
+            String Id = null;
+            //set preparedStatement paramters
+            ps.setString(1, address);
             ps.setString(2, address2);
             ps.setString(3, cityId);
-            ps.setString(4, postalCode); 
-            ps.setString(5, phone);             
-            ps.executeUpdate(); // submits update 
+            ps.setString(4, postalCode);
+            ps.setString(5, phone);
+            ps.setString(6, Id);
+
+            // call execute Update to execute SQL update statement
+            ps.executeUpdate(); // submits entire SQL statement
+            
         } catch (SQLException e) {
-            System.out.println("update address sql error");
-            System.out.println(e.getMessage());
+            System.out.println("update address sql error: " + e.getMessage());
         }
         return null;        
     }
     
     
+public static void editCustomer(String customerId, String name, String address, String address2, String cityId, String postalCode, String phone) throws SQLException {
+    
+    try{
+            
+    String sqlStmt1 = "UPDATE customer SET customerName = ? WHERE customerId = ?;";    
+    conn = DBConnection.getConnection();
+    ps = conn.prepareStatement(sqlStmt1);
+    ps.setString(1, name);    
+    ps.setString(2, customerId); 
+        System.out.println("Name " + name);
+        System.out.println("CustomerId " + customerId);
+    ps.execute();
+  
+    
+    
+    String sqlStmt2 = "SELECT addressId FROM customer WHERE customerId = ?";
+    conn = DBConnection.getConnection();
+    ps = conn.prepareStatement(sqlStmt2);
+    ps.setString(1, customerId); 
+    rs = ps.executeQuery(); // submits entire SQL statement
 
+    String addressId = null;
+     while(rs.next()) {
+            addressId = rs.getString(1);
+     }
+        System.out.println("AddressId" + addressId);
+    
+    
+    String sqlStmt3 = "UPDATE address SET address = ?, address2 = ?, cityId = ?, postalCode = ?, phone = ? WHERE addressId = ?";
+    conn = DBConnection.getConnection();
+    ps = conn.prepareStatement(sqlStmt3);
+
+    ps.setString(1, address);    
+    ps.setString(2, address2);
+    ps.setString(3, cityId);
+    ps.setString(4, postalCode);
+    ps.setString(5, phone);   
+    ps.setString(6, addressId);
+
+    ps.execute();
+
+
+    } catch(SQLException e) {
+            System.out.println("SQL ERROR");
+            System.out.println(e.getMessage()); 
+    }
+    
+
+
+    
+}
     
     
 ////////// Delete Address //////////    
