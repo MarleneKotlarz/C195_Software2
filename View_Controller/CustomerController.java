@@ -5,6 +5,7 @@
  */
 package View_Controller;
 
+import Model.Address;
 import Model.Customer;
 import java.io.IOException;
 import java.net.URL;
@@ -69,6 +70,7 @@ public class CustomerController implements Initializable {
     Parent scene;
     Customer cus;
     String cusId;
+    Address address;
  
     
     /**
@@ -78,14 +80,14 @@ public class CustomerController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         // Set Auto-Generated CustomerID
+        
 
-        // Display all Customers in the Tableview
-        displayCustomers();
+        // Display all Customers in the Tableview        
+        tableViewCustomer.setItems(DBQuery.getAllCustomers());
         
         // Set up columns in Customer tableView 
         colCusId.setCellValueFactory(new PropertyValueFactory<>("customerId")); // customerId is how it is named in the Database
         colName.setCellValueFactory(new PropertyValueFactory<>("customerName"));
-        
         colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
         colAddress2.setCellValueFactory(new PropertyValueFactory<>("adress2"));
         colCity.setCellValueFactory(new PropertyValueFactory<>("city"));
@@ -93,9 +95,11 @@ public class CustomerController implements Initializable {
         colCountry.setCellValueFactory(new PropertyValueFactory<>("country"));
         colPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
         
+
+
+        
         // Display ComboBox Cities
         comboCity.setItems(DBQuery.getAllCities());   
-        
         
     }    
     
@@ -129,38 +133,85 @@ public class CustomerController implements Initializable {
     
     // Updating a customer
     @FXML private void onActionUpdateCus(ActionEvent event) {
-        DBQuery.customerList.clear();
         
-        // get user input for textfields
-        String customerId = txtCusId.getText();
-        String name = txtName.getText();
-        String address = txtAddress.getText();
-        String address2 = txtAddress2.getText();
-        // get String value from comboCity selection
-        String coCity = comboCity.getValue().toString(); 
-        // get cityId based on coCity value
-        String cityId = DBQuery.getCityId(coCity); 
-        String postalCode = txtPostalCode.getText();
-        String phone = txtPhone.getText();
+        try {
+        //cus = tableViewCustomer.getSelectionModel().getSelectedItem();
+
+            String customerId = txtCusId.getText();
+            String name = txtName.getText();
+            String address = txtAddress.getText();
+            String address2 = txtAddress2.getText();
+            // get String value from comboCity selection
+            String coCity = comboCity.getValue().toString(); 
+            // get cityId based on coCity value
+            String cityId = DBQuery.getCityId(coCity); 
+            String postalCode = txtPostalCode.getText();
+            String phone = txtPhone.getText();         
+            
+            DBQuery.editCustomer(customerId, name, address, address2, cityId, postalCode, phone);
+            
+            DBQuery.customerList.clear();
+            DBQuery.getAllCustomers();
+            
+        }catch(Exception e) {
+          System.out.println("Error editing customer: " + e.getMessage());
+
+        }
         
         
         
-//        DBQuery.updateCustomer(customerId, name);
-//        DBQuery.getAddressId(addressId);
+//        DBQuery.customerList.clear();
+//        
+        // Select customer
+//        try{
+//            Customer updateCustomer = null;
+//            Address updateAddress = null;
+                    //= tableViewCustomer.getSelectionModel().getSelectedItem();
+//            String customerId = null;
+//            String addressId = null;
+//            String adId = addressId.getAddressId();
+//            //DBQuery.getAddressId(addressId);
+//            System.out.println("getAddressId works " + addressId);
+//            // get user input for textfields
+//            String customerId = txtCusId.getText();
+//            String name = txtName.getText();
+//            String address = txtAddress.getText();
+//            String address2 = txtAddress2.getText();
+            // get String value from comboCity selection
+//            String coCity = comboCity.getValue().toString(); 
+            // get cityId based on coCity value
+//            String cityId = DBQuery.getCityId(coCity); 
+//            String postalCode = txtPostalCode.getText();
+//            String phone = txtPhone.getText();
+//
+//
+//           //DBQuery.updateCustomer(name, address, address2, cityId, postalCode, phone);
+//        } catch(Exception e) {
+//            System.out.println("Error editing customer: " + e.getMessage()); 
+    
+    
+//        DBQuery.updateCustomer(updateCustomer);
 //        DBQuery.updateAddress(address, address2, cityId, postalCode, phone);
-//                
+//        
+//        
+//        }catch (Exception ex) {
+//            System.out.println("Error: " + ex.getMessage());
+//        }
+//        DBQuery.customerList.clear();        
 //        displayCustomers();
-        
+
+    
     }
 
+    
+    
     @FXML private void onActionDeleteCus(ActionEvent event) {
         // select customer
         Customer deleteCus = tableViewCustomer.getSelectionModel().getSelectedItem();
         String customerId = deleteCus.getCustomerId();
 
-
         
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you really want to delete this costume?");
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you really want to delete this costumer?");
         alert.setTitle("Delete Customer");
         Optional<ButtonType> result = alert.showAndWait();
         if(result.isPresent() && result.get() == ButtonType.OK) {
@@ -186,7 +237,7 @@ public class CustomerController implements Initializable {
     
 
 
-    // Clears all textfields but does not delete them
+    //Clears all textfields but does not delete them
     @FXML private void onActionClear(ActionEvent event) {
             txtCusId.setText("");
             txtName.setText("");
@@ -220,9 +271,10 @@ public class CustomerController implements Initializable {
     // Populate Customer tableView
     public void displayCustomers() {        
         tableViewCustomer.setItems(DBQuery.getAllCustomers());
+
     }
    
-    // populate textfields with data for updateCustomer method
+    //populate textfields with data 
     public String populateTableview() {        
         try {    
             Customer populatedCostumer = tableViewCustomer.getSelectionModel().getSelectedItem();
@@ -239,15 +291,5 @@ public class CustomerController implements Initializable {
         return null;
     }  
     
-    public static Customer lookupName(String search) {
-        if (!DBQuery.customerList.isEmpty()) {
-            for(Customer cus : DBQuery.customerList) {
-                if(cus.getCustomerName().equalsIgnoreCase(search)) {
-                    return cus;
-                }
-            }
-        }
-        return null;
-    }
 
 }
