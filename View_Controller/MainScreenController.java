@@ -5,6 +5,8 @@
  */
 package View_Controller;
 
+import Model.Appointment;
+import Model.Customer;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -23,7 +25,9 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import utils.DBQuery;
 
 /**
  * FXML Controller class
@@ -32,79 +36,56 @@ import javafx.stage.Stage;
  */
 public class MainScreenController implements Initializable {
 
-    @FXML
-    private TextField txtApptID;
-    @FXML
-    private TextField txtCustomer;
-    @FXML
-    private TextField txtTitle;
-    @FXML
-    private TextField txtDescription;
-    @FXML
-    private Button btAddAppt;
-    @FXML
-    private ComboBox<?> comboType;
-    @FXML
-    private DatePicker dateAppt;
-    @FXML
-    private ComboBox<?> comboStart;
-    @FXML
-    private ComboBox<?> comboEnd;
-    @FXML
-    private Button btUpdateAppt;
-    @FXML
-    private Button btSelectCustomer;
-    @FXML
-    private TableView<?> tableViewCustomer;
-    @FXML
-    private TableColumn<?, ?> colCusId;
-    @FXML
-    private TableColumn<?, ?> colCusName;
-    @FXML
-    private TextField txtSearchCustomer;
-    @FXML
-    private Button btDeleteAppt;
-    @FXML
-    private Button btSearchAppt;
-    @FXML
-    private TextField txtSearchAppointment;
-    @FXML
-    private RadioButton rbtByMonth;
-    @FXML
-    private ToggleGroup TG;
-    @FXML
-    private RadioButton rbtByWeek;
-    @FXML
-    private RadioButton rbtAll;
-    @FXML
-    private DatePicker dateView;
-    @FXML
-    private Label labelTitle;
-    @FXML
-    private TableView<?> tableViewAppt;
-    @FXML
-    private TableColumn<?, ?> colApptId;
-    @FXML
-    private TableColumn<?, ?> colCusAppt;
-    @FXML
-    private TableColumn<?, ?> colTitle;
-    @FXML
-    private TableColumn<?, ?> colType;
-    @FXML
-    private TableColumn<?, ?> colDate;
-    @FXML
-    private TableColumn<?, ?> colStart;
-    @FXML
-    private TableColumn<?, ?> colEnd;
-    @FXML
-    private Button btDisplayCus;
-    @FXML
-    private Button btDisplayReports;
-    @FXML
-    private Button btLogout;
+    ////////// BUTTONS //////////
+    @FXML private Button btAddAppt;
+    @FXML private Button btDisplayCus;
+    @FXML private Button btDisplayReports;
+    @FXML private Button btLogout;    
+    @FXML private Button btUpdateAppt;
+    @FXML private Button btSearchCustomer;
+    @FXML private Button btResetCustomer;
+    @FXML private Button btSelectCustomer;
+    @FXML private Button btDeleteAppt;
+    @FXML private Button btSearchAppt;
+    ////////// DATEPICKER //////////
+    @FXML private DatePicker dateView;
+    @FXML private DatePicker dateAppt;
+    ////////// COMBOBOXES //////////
+    @FXML private ComboBox<?> comboType;
+    @FXML private ComboBox<?> comboStart;
+    @FXML private ComboBox<?> comboEnd;
+    ////////// RADIO BUTTONS //////////
+    @FXML private ToggleGroup TG;
+    @FXML private RadioButton rbtByMonth;
+    @FXML private RadioButton rbtByWeek;
+    @FXML private RadioButton rbtAll;
+    ////////// TEXTFIELDS //////////    
+    @FXML private TextField txtApptID;
+    @FXML private TextField txtCustomer;
+    @FXML private TextField txtTitle;
+    @FXML private TextField txtDescription;
+    @FXML private TextField txtSearchCustomer;
+    @FXML private TextField txtSearchAppointment;    
+    @FXML private Label labelTitle;
+    ////////// CUSTOMER TABLVIEW //////////
+    @FXML private TableView<Customer> tableViewCustomer;
+    @FXML private TableColumn<Customer, String> colCusId;
+    @FXML private TableColumn<Customer, String> colCusName;
+    ////////// APPOINTMENT TABLEVIEW //////////
+    @FXML private TableView<Appointment> tableViewAppt;
+    @FXML private TableColumn<Appointment, String> colApptId;
+    @FXML private TableColumn<Appointment, String> colCusAppt;
+    @FXML private TableColumn<Appointment, String> colTitle;
+    @FXML private TableColumn<Appointment, String> colType;
+    @FXML private TableColumn<Appointment, String> colDate;
+    @FXML private TableColumn<Appointment, String> colStart;
+    @FXML private TableColumn<Appointment, String> colEnd;
+
     
     Stage stage;
     Parent scene;
+    Customer customer;
+    
 
     
     /**
@@ -113,62 +94,77 @@ public class MainScreenController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+        // Display all Customers in the Tableview 
+        tableViewCustomer.setItems(DBQuery.getAllCustomers());
+        // Set up columns in Customer tableView 
+        colCusId.setCellValueFactory(new PropertyValueFactory<>("customerId")); 
+        colCusName.setCellValueFactory(new PropertyValueFactory<>("customerName"));
     }    
 
+    @FXML private void onActionSearchCustomer(ActionEvent event) {
+        // Use .clear method to avoid double entries
+        DBQuery.customerList.clear();       
+        // Assign textfield to variable 
+        String search = txtSearchCustomer.getText();
+        // call method to find customer by Id or Name
+        DBQuery.lookUpCustomer(search, search);
+        tableViewCustomer.setItems(DBQuery.customerList);
+         
+    }
+    
     @FXML
-    private void onActionAddAppt(ActionEvent event) {
+    void onActionResetCustomer(ActionEvent event) {
+        DBQuery.customerList.clear();
+        txtSearchCustomer.setText("");
+        tableViewCustomer.setItems(DBQuery.getAllCustomers());
+    }
+    
+    @FXML void onActionSelectCustomer(ActionEvent event) {
+
     }
 
-    @FXML
-    private void onActionDateAppt(ActionEvent event) {
+    @FXML private void onActionUpdateAppt(ActionEvent event) {
     }
 
-    @FXML
-    private void onActionUpdateAppt(ActionEvent event) {
+    @FXML private void onActionAddAppt(ActionEvent event) {
     }
 
-    @FXML
-    private void onActionSearchAppt(ActionEvent event) {
+    @FXML private void onActionDatePickerAppt(ActionEvent event) {
     }
 
-    @FXML
-    private void onActionDeleteAppt(ActionEvent event) {
+    @FXML private void onActionSearchAppt(ActionEvent event) {
     }
 
-    @FXML
-    private void onActionRbtByMonth(ActionEvent event) {
+    @FXML private void onActionDeleteAppt(ActionEvent event) {
     }
 
-    @FXML
-    private void onActionRbtByWeek(ActionEvent event) {
+    @FXML private void onActionRbtByMonth(ActionEvent event) {
     }
 
-    @FXML
-    private void onActionRbtViewAll(ActionEvent event) {
+    @FXML private void onActionRbtByWeek(ActionEvent event) {
     }
 
-    @FXML
-    private void onActionDateView(ActionEvent event) {
+    @FXML private void onActionRbtViewAll(ActionEvent event) {
     }
 
-    @FXML
-    private void onActionDisplayCus(ActionEvent event) throws IOException {
+    @FXML private void onActionDatePickerTableView(ActionEvent event) {
+    }
+
+    @FXML private void onActionDisplayCus(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Customer.fxml"));
         stage.setScene(new Scene(scene));
         stage.show();        
     }
 
-    @FXML
-    private void onActionDisplayReports(ActionEvent event) throws IOException {
+    @FXML private void onActionDisplayReports(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Reports.fxml"));
         stage.setScene(new Scene(scene));
         stage.show();        
     }
 
-    @FXML
-    private void onActionLogout(ActionEvent event) throws IOException {
+    @FXML private void onActionLogout(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Login.fxml"));
         stage.setScene(new Scene(scene));
