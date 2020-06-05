@@ -6,6 +6,7 @@
 package utils;
 
 import Model.Address;
+import Model.Appointment;
 import Model.Customer;
 import Model.User;
 import java.sql.Connection;
@@ -29,7 +30,10 @@ public class DBQuery {
     
     public static ObservableList<String> cityList = FXCollections.observableArrayList();
     public static ObservableList<Customer> customerList = FXCollections.observableArrayList();
-
+    public static ObservableList<String> types = FXCollections.observableArrayList();
+    
+    
+    
 //--------------------------------------------------------    
 //////////////////// User login Screen ////////////////////
 //--------------------------------------------------------    
@@ -291,7 +295,6 @@ public static void updateCustomer(String customerId, String name, String address
     public static String lookUpCustomer(String customerId, String customerName) {
         try {
             String sqlStmt = "SELECT customerId, customerName FROM customer WHERE customerId = ? || customerName = ?";
-            System.out.println("After select");
             
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
@@ -303,14 +306,29 @@ public static void updateCustomer(String customerId, String name, String address
                 String name = rs.getString("customerName");
                 customerList.add(new Customer(id, name));
             }
-            System.out.println(customerId);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
         return null;
     }
     
-    
+    public static ObservableList<String> getTypes()  {
+        String sqlStmt = "SELECT type FROM appointment";
+        try {      
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt);
+            rs = ps.executeQuery(); // submits entire SQL statement
+            
+            while(rs.next()) {
+                String type = rs.getString("type");
+                Appointment apptType = new Appointment(type);                
+                types.add(apptType.getType());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return types;
+    }
     
     
     
