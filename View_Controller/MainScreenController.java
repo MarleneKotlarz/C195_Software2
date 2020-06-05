@@ -9,13 +9,20 @@ import Model.Appointment;
 import Model.Customer;
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -48,12 +55,12 @@ public class MainScreenController implements Initializable {
     @FXML private Button btDeleteAppt;
     @FXML private Button btSearchAppt;
     ////////// DATEPICKER //////////
-    @FXML private DatePicker dateView;
-    @FXML private DatePicker dateAppt;
+    @FXML private DatePicker datePickerView;
+    @FXML private DatePicker datePickerAppt;
     ////////// COMBOBOXES //////////
-    @FXML private ComboBox<?> comboType;
-    @FXML private ComboBox<?> comboStart;
-    @FXML private ComboBox<?> comboEnd;
+    @FXML private ComboBox comboType;
+    @FXML private ComboBox comboStart;
+    @FXML private ComboBox comboEnd;
     ////////// RADIO BUTTONS //////////
     @FXML private ToggleGroup TG;
     @FXML private RadioButton rbtByMonth;
@@ -86,6 +93,10 @@ public class MainScreenController implements Initializable {
     Parent scene;
     Customer customer;
     
+    ObservableList<String> startTimes = FXCollections.observableArrayList();    
+    ObservableList<String> endTimes = FXCollections.observableArrayList();
+    
+ 
 
     
     /**
@@ -99,8 +110,15 @@ public class MainScreenController implements Initializable {
         // Set up columns in Customer tableView 
         colCusId.setCellValueFactory(new PropertyValueFactory<>("customerId")); 
         colCusName.setCellValueFactory(new PropertyValueFactory<>("customerName"));
+        // Populate comboType with types
+        comboType.setItems(DBQuery.getTypes());
+        // Set up start times
+
+        
+        
     }    
 
+    
     @FXML private void onActionSearchCustomer(ActionEvent event) {
         // Use .clear method to avoid double entries
         DBQuery.customerList.clear();       
@@ -108,19 +126,22 @@ public class MainScreenController implements Initializable {
         String search = txtSearchCustomer.getText();
         // call method to find customer by Id or Name
         DBQuery.lookUpCustomer(search, search);
-        tableViewCustomer.setItems(DBQuery.customerList);
-         
+        tableViewCustomer.setItems(DBQuery.customerList);         
     }
     
-    @FXML
-    void onActionResetCustomer(ActionEvent event) {
+    @FXML void onActionResetCustomer(ActionEvent event) {
         DBQuery.customerList.clear();
         txtSearchCustomer.setText("");
         tableViewCustomer.setItems(DBQuery.getAllCustomers());
     }
     
     @FXML void onActionSelectCustomer(ActionEvent event) {
-
+        Customer selectCustomer = tableViewCustomer.getSelectionModel().getSelectedItem();
+        if (selectCustomer != null) {
+            txtCustomer.setText(selectCustomer.getCustomerName());
+        } else {
+            System.out.println("Please select a customer.");
+        }
     }
 
     @FXML private void onActionUpdateAppt(ActionEvent event) {
@@ -130,6 +151,16 @@ public class MainScreenController implements Initializable {
     }
 
     @FXML private void onActionDatePickerAppt(ActionEvent event) {
+        if (datePickerAppt.getValue() == null) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Date Missing");
+            alert.setContentText("Please select a date.");
+            alert.showAndWait();
+        } else {
+            // LocalDate (JavaClass) is without a time-zone
+            LocalDate date = datePickerAppt.getValue();
+        }
     }
 
     @FXML private void onActionSearchAppt(ActionEvent event) {
@@ -170,5 +201,22 @@ public class MainScreenController implements Initializable {
         stage.setScene(new Scene(scene));
         stage.show();        
     }
+    
+    public void getApptTxtFields() {
+        try {
+            String apptId = txtApptID.getText();
+            String name = txtCustomer.getText();
+            String title = txtTitle.getText();
+            String description = txtDescription.getText();
+            String coType = comboType.getValue().toString();
+            String coStart = comboStart.getValue().toString();
+            String coEnd = comboEnd.getValue().toString();
+            
+        } catch(Exception e) {
+            System.out.println("Error getting appointment txt fields: " +e.getMessage());
+        }
+    }
+    
+
     
 }
