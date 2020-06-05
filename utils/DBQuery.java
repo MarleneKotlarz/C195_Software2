@@ -284,6 +284,37 @@ public static void updateCustomer(String customerId, String name, String address
         return null;
     }    
    
+//--------------------------------------------------------      
+//////////////////// APPOINTMENT / MAIN SCREEN ////////////////////
+//--------------------------------------------------------      
+    
+    public static String lookUpCustomer(String customerId, String customerName) {
+        try {
+            String sqlStmt = "SELECT customerId, customerName FROM customer WHERE customerId = ? || customerName = ?";
+            System.out.println("After select");
+            
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt);
+            ps.setString(1, customerId);
+            ps.setString(2, customerName);
+            rs = ps.executeQuery();
+            while(rs.next()) {
+                String id = rs.getString("customerId");
+                String name = rs.getString("customerName");
+                customerList.add(new Customer(id, name));
+            }
+            System.out.println(customerId);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+    
+    
+    
+    
+    
+    
     
 }
     
