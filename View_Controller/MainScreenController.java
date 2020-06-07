@@ -96,10 +96,15 @@ public class MainScreenController implements Initializable {
     Stage stage;
     Parent scene;
     Customer customer;
+    String selectedDate;
+    String selectedStartTime;
+    String selectedEndTime;
+    String combinedDateTimeStart;
+    String combinedDateTimeEnd;
     
     ObservableList<String> startTimes = FXCollections.observableArrayList();    
     ObservableList<String> endTimes = FXCollections.observableArrayList();
-    
+    ObservableList<String> appointmentInfo = FXCollections.observableArrayList();
  
 
     
@@ -117,8 +122,10 @@ public class MainScreenController implements Initializable {
         // Populate comboType with types
         comboType.setItems(DBQuery.getTypes());
         // Set up start times
-        startTimes.addAll("08:00", "09:00", "10:00");
+        startTimes.addAll("08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00");
+        endTimes.addAll("08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00");
         comboStart.setItems(startTimes);
+        comboEnd.setItems(endTimes);        
 
         
         
@@ -142,9 +149,12 @@ public class MainScreenController implements Initializable {
     }
     
     @FXML void onActionSelectCustomer(ActionEvent event) {
-        Customer selectCustomer = tableViewCustomer.getSelectionModel().getSelectedItem();
-        if (selectCustomer != null) {
-            txtCustomer.setText(selectCustomer.getCustomerName());
+        //Customer selectCustomer = tableViewCustomer.getSelectionModel().getSelectedItem();
+        customer = tableViewCustomer.getSelectionModel().getSelectedItem();
+      //  tableViewCustomer.
+        if (customer != null) {
+            txtCustomer.setText(customer.getCustomerName());
+            
         } else {
             System.out.println("Please select a customer.");
         }
@@ -154,6 +164,21 @@ public class MainScreenController implements Initializable {
     }
 
     @FXML private void onActionAddAppt(ActionEvent event) {
+        
+        // These two variables will need to be passed into the DB query addAllAppointment method along with with textfields and customer selection
+        combinedDateTimeStart = selectedDate + " " + selectedStartTime;
+        combinedDateTimeEnd = selectedDate + " " + selectedEndTime;
+    
+
+
+        // Keep this in case I need to work with a LocalDateTime object within Java
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+//        LocalDateTime startDateAndTimeObject = LocalDateTime.parse(combinedDateTimeStart, formatter);
+//        LocalDateTime endDateAndTimeObject = LocalDateTime.parse(combinedDateTimeEnd, formatter);
+
+
+
+        
     }
 
     @FXML private void onActionDatePickerAppt(ActionEvent event) {
@@ -164,21 +189,18 @@ public class MainScreenController implements Initializable {
             alert.setContentText("Please select a date.");
             alert.showAndWait();
         } else {
-            // LocalDate (JavaClass) is without a time-zone
-            LocalDate date = datePickerAppt.getValue();
-            String timeTest = "02:51";
-            System.out.println(date +" "+ timeTest);
-            String ldt = (date +" "+ timeTest);
             
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            LocalDateTime localtDateAndTime = LocalDateTime.parse(ldt, formatter);
-            System.out.println(".... " + localtDateAndTime);
+            // LocalDate (JavaClass) is without a time-zone
+            String dateSelection = datePickerAppt.getValue().toString();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate formatedDateSelection = LocalDate.parse(dateSelection, formatter);
+            selectedDate = formatedDateSelection.format(formatter);
+            
         }
     }
     
     
-    @FXML
-    void onActionComboStart(ActionEvent event) {
+    @FXML void onActionComboStart(ActionEvent event) {
         if (comboStart.getValue() == null) {
             Alert alert = new Alert(AlertType.ERROR);
             alert.setTitle("Error");
@@ -186,15 +208,29 @@ public class MainScreenController implements Initializable {
             alert.setContentText("Please select a time.");
             alert.showAndWait();
         } else {
-            String date = comboStart.getValue().toString();
-            String ldt = (date); 
-            //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-            //LocalDateTime localtDateAndTime = LocalDateTime.parse(ldt, formatter);
-            //System.out.println(".... ComboStart " + localtDateAndTime);
+            String startSelection = comboStart.getValue().toString();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            LocalTime formattedStartTime = LocalTime.parse(startSelection, formatter);
+            selectedStartTime = formattedStartTime.format(formatter);
             } 
     }
 
-
+    @FXML void onActionComboEnd(ActionEvent event) {
+        if (comboEnd.getValue() == null) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Start Time is  Missing");
+            alert.setContentText("Please select a time.");
+            alert.showAndWait();
+        } else {
+            String endSelection = comboEnd.getValue().toString();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            LocalTime formattedEndTime = LocalTime.parse(endSelection, formatter);
+            selectedEndTime = formattedEndTime.format(formatter);
+            } 
+    }
+    
+    
     @FXML private void onActionSearchAppt(ActionEvent event) {
     }
 
