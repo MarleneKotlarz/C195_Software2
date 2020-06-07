@@ -9,9 +9,13 @@ import Model.Appointment;
 import Model.Customer;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -113,6 +117,8 @@ public class MainScreenController implements Initializable {
         // Populate comboType with types
         comboType.setItems(DBQuery.getTypes());
         // Set up start times
+        startTimes.addAll("08:00", "09:00", "10:00");
+        comboStart.setItems(startTimes);
 
         
         
@@ -160,8 +166,34 @@ public class MainScreenController implements Initializable {
         } else {
             // LocalDate (JavaClass) is without a time-zone
             LocalDate date = datePickerAppt.getValue();
+            String timeTest = "02:51";
+            System.out.println(date +" "+ timeTest);
+            String ldt = (date +" "+ timeTest);
+            
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            LocalDateTime localtDateAndTime = LocalDateTime.parse(ldt, formatter);
+            System.out.println(".... " + localtDateAndTime);
         }
     }
+    
+    
+    @FXML
+    void onActionComboStart(ActionEvent event) {
+        if (comboStart.getValue() == null) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Start Time is  Missing");
+            alert.setContentText("Please select a time.");
+            alert.showAndWait();
+        } else {
+            String date = comboStart.getValue().toString();
+            String ldt = (date); 
+            //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            //LocalDateTime localtDateAndTime = LocalDateTime.parse(ldt, formatter);
+            //System.out.println(".... ComboStart " + localtDateAndTime);
+            } 
+    }
+
 
     @FXML private void onActionSearchAppt(ActionEvent event) {
     }
@@ -217,6 +249,7 @@ public class MainScreenController implements Initializable {
         }
     }
     
+
 
     
 }
