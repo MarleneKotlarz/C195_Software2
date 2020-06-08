@@ -12,15 +12,43 @@ package Model;
 public class Appointment {
     
     String apptId;
+    String cusId;
     String cusName;
+    String userId;    
     String title;
     String description;
     String type;
     String date;
     String start;
-    String end;
+    String end;    
+
+
 
     
+    // Constructor used for appointment TableView 
+    public Appointment(String id, String name, String title, String description, String type, String start, String end) {
+        this.apptId = id;
+        this.cusName = name;
+        this.title = title;
+        this.description = description;
+        this.type = type;
+        this.start = start;
+        this.end = end;
+    }
+
+    //Constructor and addAppointment  
+    public Appointment(String cusId, String title, String description, String type, String start, String end) {
+        this.cusId = cusId;
+        this.title = title;
+        this.description = description;
+        this.type = type;
+        this.start = start;
+        this.end = end;
+    }
+    
+    
+
+    // Getters and Setters
     
     public String getApptId() {
         return apptId;
@@ -28,6 +56,14 @@ public class Appointment {
 
     public void setApptId(String apptId) {
         this.apptId = apptId;
+    }
+
+    public String getCusId() {
+        return cusId;
+    }
+
+    public void setCusId(String cusId) {
+        this.cusId = cusId;
     }
 
     public String getCusName() {
@@ -38,6 +74,14 @@ public class Appointment {
         this.cusName = cusName;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+    
     public String getTitle() {
         return title;
     }
