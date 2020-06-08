@@ -13,6 +13,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
@@ -31,7 +33,7 @@ public class DBQuery {
     public static ObservableList<String> cityList = FXCollections.observableArrayList();
     public static ObservableList<Customer> customerList = FXCollections.observableArrayList();
     public static ObservableList<String> types = FXCollections.observableArrayList();
-    
+    public static ObservableList<Appointment> appointmentList = FXCollections.observableArrayList();
     
     
 //--------------------------------------------------------    
@@ -157,7 +159,7 @@ public static ObservableList<Customer> getAllCustomers() {
             String zip = rs.getString("postalCode");
             String country = rs.getString("country");
             String phone = rs.getString("phone");
-            // add variables to the customerList for the Customer tableview in Customer controller                
+            // add variables to the customerList                
             customerList.add(new Customer(id, name, add, add2, city, zip, country, phone));
 
             }
@@ -312,24 +314,90 @@ public static void updateCustomer(String customerId, String name, String address
         return null;
     }
     
-    public static ObservableList<String> getTypes()  {
-        String sqlStmt = "SELECT type FROM appointment";
-        try {      
-            conn = DBConnection.getConnection();
-            ps = conn.prepareStatement(sqlStmt);
-            rs = ps.executeQuery(); // submits entire SQL statement
-            
-            while(rs.next()) {
-                String type = rs.getString("type");
-                Appointment apptType = new Appointment(type);                
-                types.add(apptType.getType());
+
+public static ObservableList<Appointment> getAllAppointments() {
+    String sqlStmt = "SELECT appointmentId, customerName, title, description, type, start, end \n" +
+    "FROM appointment ap \n" +
+    "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
+    "ORDER BY appointmentId";
+    
+
+
+    try {
+        conn = DBConnection.getConnection();
+        ps = conn.prepareStatement(sqlStmt);
+        rs = ps.executeQuery(); // submits entire SQL statement
+ 
+        
+
+        
+        while(rs.next()) {
+            String apptId = rs.getString("appointmentId");
+            String cusName = rs.getString("customerName");
+            String title = rs.getString("title");
+            String descr = rs.getString("description");
+            String type = rs.getString("type");            
+            String start = rs.getString("start");
+            String end = rs.getString("end");
+
+            // add variables to the appointmentList for the appointment tableview in MainScreenController                
+
+            appointmentList.add(new Appointment(apptId, cusName, title, descr, type, start, end));    
+
+
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return types;
+        return appointmentList;  
+        
+    } 
+
+
+public static String addAppointment(String id, String title, String description, String type, String start, String end) {
+//    String sqlStmt = "INSERT INTO appointment (customerId, userId, title, description, location, contact, type, url, start, end, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), 'test', now(), 'test')";
+    String sqlStmt = "INSERT INTO appointment (customerId, userId, title, description, location, contact, type, url, start, end, createDate, createdBy, lastUpdate, lastUpdateBy) \n" + 
+                                      "VALUES (?, '1', ?, ?, 'location-sample-text', 'contact-sample-text', ?, 'url-sample-text', ?, ?, now(), 'test', now(), 'test')";    
+
+      
+    try {
+        conn = DBConnection.getConnection();
+        ps = conn.prepareStatement(sqlStmt);
+        ps.setString(1, id); // replaces first ? in SQL statement
+        ps.setString(2, title);
+        ps.setString(3, description);
+        ps.setString(4, type);
+        ps.setString(5, start);
+        ps.setString(6, end);
+        
+        ps.execute(); // submits entire SQL statement
+    } catch (SQLException e) {
+        System.out.println(e.getMessage()); 
     }
+    return null;    
+}
     
+    
+    
+// Moved to MainScreenController    
+//    public static ObservableList<String> getTypes()  {
+//        String sqlStmt = "SELECT type FROM appointment";
+//        try {      
+//            conn = DBConnection.getConnection();
+//            ps = conn.prepareStatement(sqlStmt);
+//            rs = ps.executeQuery(); // submits entire SQL statement
+//            
+//            while(rs.next()) {
+//                String type = rs.getString("type");
+//                Appointment apptType = new Appointment(type);                
+//                types.add(apptType.getType());
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return types;
+//    }
+
     
     
     
