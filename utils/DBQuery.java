@@ -13,8 +13,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
@@ -139,34 +144,34 @@ public class DBQuery {
     
 ////////// GET CUSTOMER INFO //////////
     
-public static ObservableList<Customer> getAllCustomers() {
-    String sqlStmt = "SELECT customerId, customerName, address, address2, city, postalCode, country, phone\n" +            
-        "FROM customer cu\n" + 
-        "INNER JOIN address ad ON cu.addressId = ad.addressId\n" +
-        "INNER JOIN city ci ON ad.cityId = ci.cityId\n" +
-        "INNER JOIN country co ON ci.countryId = co.countryId ORDER BY customerId";
-    try {
-        conn = DBConnection.getConnection();
-        ps = conn.prepareStatement(sqlStmt);
-        rs = ps.executeQuery(); // submits entire SQL statement
-            
-        while(rs.next()) {
-            String id = rs.getString("customerId");
-            String name = rs.getString("customerName");
-            String add = rs.getString("address");
-            String add2 = rs.getString("address2");
-            String city = rs.getString("city");
-            String zip = rs.getString("postalCode");
-            String country = rs.getString("country");
-            String phone = rs.getString("phone");
-            // add variables to the customerList                
-            customerList.add(new Customer(id, name, add, add2, city, zip, country, phone));
+    public static ObservableList<Customer> getAllCustomers() {
+        String sqlStmt = "SELECT customerId, customerName, address, address2, city, postalCode, country, phone\n" +            
+            "FROM customer cu\n" + 
+            "INNER JOIN address ad ON cu.addressId = ad.addressId\n" +
+            "INNER JOIN city ci ON ad.cityId = ci.cityId\n" +
+            "INNER JOIN country co ON ci.countryId = co.countryId ORDER BY customerId";
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt);
+            rs = ps.executeQuery(); // submits entire SQL statement
 
+            while(rs.next()) {
+                String id = rs.getString("customerId");
+                String name = rs.getString("customerName");
+                String add = rs.getString("address");
+                String add2 = rs.getString("address2");
+                String city = rs.getString("city");
+                String zip = rs.getString("postalCode");
+                String country = rs.getString("country");
+                String phone = rs.getString("phone");
+                // add variables to the customerList                
+                customerList.add(new Customer(id, name, add, add2, city, zip, country, phone));
+
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return customerList;        
+            return customerList;        
     }
        
     
@@ -213,44 +218,44 @@ public static ObservableList<Customer> getAllCustomers() {
     
 ////////// UPDATE CUSTOMER //////////
     
-public static void updateCustomer(String customerId, String name, String address, String address2, String cityId, String postalCode, String phone) throws SQLException {
-    
-    try{            
-        String sqlStmt1 = "UPDATE customer SET customerName = ? WHERE customerId = ?;";    
-        conn = DBConnection.getConnection();
-        ps = conn.prepareStatement(sqlStmt1);
-        ps.setString(1, name);    
-        ps.setString(2, customerId); 
-        ps.execute();  
-    
-    
-        String sqlStmt2 = "SELECT addressId FROM customer WHERE customerId = ?";
-        conn = DBConnection.getConnection();
-        ps = conn.prepareStatement(sqlStmt2);
-        ps.setString(1, customerId); 
-        rs = ps.executeQuery(); // submits entire SQL statement
-        String addressId = null;
-            while(rs.next()) {
-                addressId = rs.getString(1);
-            }      
-    
-    
-        String sqlStmt3 = "UPDATE address SET address = ?, address2 = ?, cityId = ?, postalCode = ?, phone = ? WHERE addressId = ?";
-        conn = DBConnection.getConnection();
-        ps = conn.prepareStatement(sqlStmt3);
+    public static void updateCustomer(String customerId, String name, String address, String address2, String cityId, String postalCode, String phone) throws SQLException {
 
-        ps.setString(1, address);    
-        ps.setString(2, address2);
-        ps.setString(3, cityId);
-        ps.setString(4, postalCode);
-        ps.setString(5, phone);   
-        ps.setString(6, addressId);
-        ps.execute();
-        
-    } catch(SQLException e) {
-            System.out.println("SQL ERROR:" + e.getMessage());
-    }       
-}
+        try{            
+            String sqlStmt1 = "UPDATE customer SET customerName = ? WHERE customerId = ?;";    
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt1);
+            ps.setString(1, name);    
+            ps.setString(2, customerId); 
+            ps.execute();  
+
+
+            String sqlStmt2 = "SELECT addressId FROM customer WHERE customerId = ?";
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt2);
+            ps.setString(1, customerId); 
+            rs = ps.executeQuery(); // submits entire SQL statement
+            String addressId = null;
+                while(rs.next()) {
+                    addressId = rs.getString(1);
+                }      
+                
+
+            String sqlStmt3 = "UPDATE address SET address = ?, address2 = ?, cityId = ?, postalCode = ?, phone = ? WHERE addressId = ?";
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt3);
+
+            ps.setString(1, address);    
+            ps.setString(2, address2);
+            ps.setString(3, cityId);
+            ps.setString(4, postalCode);
+            ps.setString(5, phone);   
+            ps.setString(6, addressId);
+            ps.execute();
+
+        } catch(SQLException e) {
+                System.out.println("SQL ERROR:" + e.getMessage());
+        }       
+    }
     
     
 ////////// DELETE CUSTOMER AND ASSOCIATED ADDRESS //////////
@@ -290,9 +295,13 @@ public static void updateCustomer(String customerId, String name, String address
         return null;
     }    
    
+    
 //--------------------------------------------------------      
 //////////////////// APPOINTMENT / MAIN SCREEN ////////////////////
 //--------------------------------------------------------      
+    
+    
+////////// SEARCH FOR CUSTOMER //////////
     
     public static String lookUpCustomer(String customerId, String customerName) {
         try {
@@ -314,92 +323,104 @@ public static void updateCustomer(String customerId, String name, String address
         return null;
     }
     
-
-public static ObservableList<Appointment> getAllAppointments() {
-    String sqlStmt = "SELECT appointmentId, customerName, title, description, type, start, end \n" +
-    "FROM appointment ap \n" +
-    "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
-    "ORDER BY appointmentId";
-    
-
-
-    try {
-        conn = DBConnection.getConnection();
-        ps = conn.prepareStatement(sqlStmt);
-        rs = ps.executeQuery(); // submits entire SQL statement
- 
+////////// GET APPOINTMENT INFO //////////    
+    // Information for Appointment Tableview which displays customerName for each appointment 
+    public static ObservableList<Appointment> getAllAppointments() {
+        String sqlStmt = "SELECT appointmentId, customerName, title, description, type, start, end \n" +
+        "FROM appointment ap \n" +
+        "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
+        "ORDER BY appointmentId";
         
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt);
+            rs = ps.executeQuery(); // submits entire SQL statement
 
-        
-        while(rs.next()) {
-            String apptId = rs.getString("appointmentId");
-            String cusName = rs.getString("customerName");
-            String title = rs.getString("title");
-            String descr = rs.getString("description");
-            String type = rs.getString("type");            
-            String start = rs.getString("start");
-            String end = rs.getString("end");
+            while(rs.next()) {
+                String apptId = rs.getString("appointmentId");
+                String cusName = rs.getString("customerName");
+                String title = rs.getString("title");
+                String descr = rs.getString("description");
+                String type = rs.getString("type");            
+                String start = rs.getString("start");
+                String end = rs.getString("end");
 
-            // add variables to the appointmentList for the appointment tableview in MainScreenController                
+                // convert start time from UTC to local data time that the user selected
+                Timestamp utcStartTime = Timestamp.valueOf(start);// Set utcStartTime timestamp value to UTC output from appointmentDB start table (ex: 2020-06-10 13:00:00.0)
+                LocalDateTime ldtInput = utcStartTime.toLocalDateTime(); // convert timestamp to localdattime format (ex: 2020-06-10T13:00)
+                ZonedDateTime zdtOutput = ldtInput.atZone(ZoneId.of("UTC")); // select the zone date time that includes the string 'UTC' (ex: 2020-06-10T13:00Z[UTC])
+                ZonedDateTime zdtOutToLocalTimeZone = zdtOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString())); // convert UTC zone to local time zone (ex: 2020-06-10T09:00-04:00[America/New_York])
+                LocalDateTime ldtOutput = zdtOutToLocalTimeZone.toLocalDateTime(); // convert local zone to local data time (ex: 2020-06-10T09:00)
+                start = Timestamp.valueOf(ldtOutput).toString(); // reasigns the start variable to the  local date time format (ex: 2020-06-10 09:00:00.0)
 
-            appointmentList.add(new Appointment(apptId, cusName, title, descr, type, start, end));    
 
+                // convert end time from UTC to local data time that the user selected
+                Timestamp utcEndTime = Timestamp.valueOf(end); // same as above converstion only for "end time"
+                            ldtInput = utcEndTime.toLocalDateTime(); 
+                            zdtOutput = ldtInput.atZone(ZoneId.of("UTC")); 
+                            zdtOutToLocalTimeZone = zdtOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
+                            ldtOutput = zdtOutToLocalTimeZone.toLocalDateTime();
+                            end = Timestamp.valueOf(ldtOutput).toString(); // same as above converstion only for "end time"
 
+                appointmentList.add(new Appointment(apptId, cusName, title, descr, type, start, end));   
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return appointmentList;  
-        
+        return appointmentList;          
     } 
 
+////////// ADD APPOINTMENT //////////
+    
+    public static String addAppointment(String customerId, String title, String description, String type, String start, String end) {
 
-public static String addAppointment(String id, String title, String description, String type, String start, String end) {
-//    String sqlStmt = "INSERT INTO appointment (customerId, userId, title, description, location, contact, type, url, start, end, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), 'test', now(), 'test')";
-    String sqlStmt = "INSERT INTO appointment (customerId, userId, title, description, location, contact, type, url, start, end, createDate, createdBy, lastUpdate, lastUpdateBy) \n" + 
-                                      "VALUES (?, '1', ?, ?, 'location-sample-text', 'contact-sample-text', ?, 'url-sample-text', ?, ?, now(), 'test', now(), 'test')";    
+        String sqlStmt = "INSERT INTO appointment (customerId, userId, title, description, location, contact, type, url, start, end, createDate, createdBy, lastUpdate, lastUpdateBy) \n" + 
+            "VALUES (?, '1', ?, ?, 'location-sample-text', 'contact-sample-text', ?, 'url-sample-text', ?, ?, now(), 'test', now(), 'test')";    
 
-      
-    try {
-        conn = DBConnection.getConnection();
-        ps = conn.prepareStatement(sqlStmt);
-        ps.setString(1, id); // replaces first ? in SQL statement
-        ps.setString(2, title);
-        ps.setString(3, description);
-        ps.setString(4, type);
-        ps.setString(5, start);
-        ps.setString(6, end);
-        
-        ps.execute(); // submits entire SQL statement
-    } catch (SQLException e) {
-        System.out.println(e.getMessage()); 
+        try {
+            
+            
+            
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt);
+            ps.setString(1, customerId); // replaces first ? placeholder in SQL statement
+            ps.setString(2, title);
+            ps.setString(3, description);
+            ps.setString(4, type);
+            ps.setString(5, start);
+            ps.setString(6, end);
+
+            ps.execute(); // submits entire SQL statement
+        } catch (SQLException e) {
+            System.out.println(e.getMessage()); 
+        }
+        return null;    
     }
-    return null;    
-}
     
-    
-    
-// Moved to MainScreenController    
-//    public static ObservableList<String> getTypes()  {
-//        String sqlStmt = "SELECT type FROM appointment";
-//        try {      
-//            conn = DBConnection.getConnection();
-//            ps = conn.prepareStatement(sqlStmt);
-//            rs = ps.executeQuery(); // submits entire SQL statement
-//            
-//            while(rs.next()) {
-//                String type = rs.getString("type");
-//                Appointment apptType = new Appointment(type);                
-//                types.add(apptType.getType());
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return types;
-//    }
 
     
+////////// UPDATE APPOINTMENT //////////
     
+    public static String updateAppointment(String customerId, String title, String description, String type, String start, String end, String appointmentId) {
+        
+        try {
+            String sqlStmt2 = "UPDATE appointment SET customerId = ?, title = ?, description = ?, type = ?, start = ?, end = ? WHERE appointmentId = ?";
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt2);
+            ps.setString(1, customerId);
+            ps.setString(2, title);
+            ps.setString(3, description);
+            ps.setString(4, type);
+            ps.setString(5, start);
+            ps.setString(6, end);
+            ps.setString(7, appointmentId);
+            ps.execute();
+            
+        }catch(SQLException e) {
+            System.out.println("Update Appointment SQL ERROR:" + e.getMessage());
+    }
+    return null;
+    }
     
     
 }
