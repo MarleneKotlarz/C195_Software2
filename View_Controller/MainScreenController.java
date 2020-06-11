@@ -18,6 +18,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.TimeZone;
 import javafx.collections.FXCollections;
@@ -31,6 +32,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -228,8 +230,7 @@ public class MainScreenController implements Initializable {
         try {
             
             //------------ Time conversion ------------//
-            LocalDate localDate = datePickerAppt.getValue();
-            
+            LocalDate localDate = datePickerAppt.getValue();            
             LocalTime startTimes = LocalTime.parse(comboStart.getSelectionModel().getSelectedItem(), timeDTF);
             LocalTime endTimes = LocalTime.parse(comboEnd.getSelectionModel().getSelectedItem(), timeDTF);
             LocalDateTime startLDT = LocalDateTime.of(localDate, startTimes);
@@ -247,18 +248,35 @@ public class MainScreenController implements Initializable {
             String description = txtDescription.getText();
             String coType = comboType.getSelectionModel().getSelectedItem().toString();
             
-        // String coStart = comboStart.getValue().toString();
-        // String coEnd = comboEnd.getValue().toString();
+        String coStart = comboStart.getValue().toString();
+        String coEnd = comboEnd.getValue().toString();
             String appointmentId = txtApptID.getText();
 
             // Calls updateAppointment method and passes in required arguments
-            DBQuery.updateAppointment(customerId, title, description, coType, startSQLIn, endSQLIn, appointmentId);
+            DBQuery.updateAppointment(title, description, coType, coStart, coEnd, appointmentId);
             // Display appointment Tablview
             displayAppointments();        
             
         }catch(Exception e) {
           System.out.println("Error editing appointment: " + e.getMessage());
         }  
+    }
+    
+    @FXML private void onActionDeleteAppt(ActionEvent event) {
+        
+        // Selected appointment
+        Appointment deleteAppt = tableViewAppt.getSelectionModel().getSelectedItem();
+        String apptId = deleteAppt.getApptId();
+        // Set AlertBox with Button
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you really want to delete this appointment?");
+        alert.setTitle("Delete Appointment");        
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && result.get() == ButtonType.OK) {            
+            //call delete Customer method and pass in value
+            DBQuery.deleteAppointment(apptId);           
+            // Load appointment tableView again with updated appointment List
+            displayAppointments();
+        }      
     }
     
 
@@ -273,14 +291,16 @@ public class MainScreenController implements Initializable {
     
     ////////// POPULATE TEXTFIELDS TO UPDATE APPOINTMENT //////////
     @FXML void onClickSetAppointment(MouseEvent event) {
+        
         // Get selected appointment record
-
         Appointment displayAppt = tableViewAppt.getSelectionModel().getSelectedItem();
+        
         // Poluate textfields with data from Appointment TableView so they can be updated
         try {
 
                 // Set data from tableview to textfields
                 txtApptID.setText(displayAppt.getApptId());
+                txtCusId.setText(displayAppt.getCusId());
                 txtCustomer.setText(displayAppt.getCusName());
                 txtTitle.setText(displayAppt.getTitle());
                 txtDescription.setText(displayAppt.getDescription());
@@ -320,7 +340,7 @@ public class MainScreenController implements Initializable {
     ////////// APPOINTMENT TYPES //////////
     public static ObservableList <String> getAllTypes() {
         types.removeAll(types);
-        types.addAll("Beginner", "Intermediate", "Advanced");
+        types.addAll("English", "German", "Spanish", "French", "Chinese", "Russian", "Indian");
         return types;
     }
     
@@ -340,8 +360,7 @@ public class MainScreenController implements Initializable {
     }
     
 
-    @FXML private void onActionDeleteAppt(ActionEvent event) {
-    }
+
     
 
     @FXML private void onActionRbtByMonth(ActionEvent event) {
