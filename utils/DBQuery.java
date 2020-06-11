@@ -20,6 +20,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
@@ -39,7 +40,7 @@ public class DBQuery {
     public static ObservableList<Customer> customerList = FXCollections.observableArrayList();
     public static ObservableList<String> types = FXCollections.observableArrayList();
     public static ObservableList<Appointment> appointmentList = FXCollections.observableArrayList();
-    
+    public static DateTimeFormatter dateTimeDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");    
     
 //--------------------------------------------------------    
 //////////////////// User login Screen ////////////////////
@@ -323,6 +324,7 @@ public class DBQuery {
         return null;
     }
     
+    
 ////////// GET APPOINTMENT INFO //////////    
     
     // Information for Appointment Tableview which displays customerName for each appointment 
@@ -358,8 +360,8 @@ public class DBQuery {
                 ZonedDateTime zdtOutToLocalTimeZone = zdtOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString())); 
                 // Convert local zone to local data time (ex: 2020-06-10T09:00)
                 LocalDateTime ldtOutput = zdtOutToLocalTimeZone.toLocalDateTime(); 
-                // reassigns the start variable to the local date time String format (ex: 2020-06-10 09:00:00.0)
-                start = Timestamp.valueOf(ldtOutput).toString(); 
+                // reassigns the start variable to LocalDateTime String format (ex: 2020-06-10 09:00:00)
+                String formattedStartTime = ldtOutput.format(dateTimeDTF); 
 
 
                 //-------- Convert end time from UTC to local data time that the user selected --------//
@@ -369,10 +371,14 @@ public class DBQuery {
                 zdtOutput = ldtInput.atZone(ZoneId.of("UTC")); 
                 zdtOutToLocalTimeZone = zdtOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
                 ldtOutput = zdtOutToLocalTimeZone.toLocalDateTime();
-                end = Timestamp.valueOf(ldtOutput).toString();
+                String formattedEndTime = ldtOutput.format(dateTimeDTF);
+                
+                
+                System.out.println("formattetTime:" + formattedEndTime);
+
                 
                 // Assign parameters to .add method
-                appointmentList.add(new Appointment(apptId, cusName, title, descr, type, start, end));   
+                appointmentList.add(new Appointment(apptId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -436,8 +442,8 @@ public class DBQuery {
                 ZonedDateTime zdtOutToLocalTimeZone = zdtOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString())); 
                 // Convert local zone to local data time (ex: 2020-06-10T09:00)
                 LocalDateTime ldtOutput = zdtOutToLocalTimeZone.toLocalDateTime(); 
-                // reasigns the start variable to the local date time String format (ex: 2020-06-10 09:00:00.0)
-                start = Timestamp.valueOf(ldtOutput).toString(); 
+                // reassigns the start variable to LocalDateTime String format (ex: 2020-06-10 09:00:00)
+                start = ldtOutput.format(dateTimeDTF); 
 
 
                 //-------- Convert end time from UTC to local data time that the user selected --------//
@@ -447,7 +453,7 @@ public class DBQuery {
                 zdtOutput = ldtInput.atZone(ZoneId.of("UTC")); 
                 zdtOutToLocalTimeZone = zdtOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
                 ldtOutput = zdtOutToLocalTimeZone.toLocalDateTime();
-                end = Timestamp.valueOf(ldtOutput).toString();
+                end = ldtOutput.format(dateTimeDTF);
             
         }catch(SQLException e) {
             System.out.println("Update Appointment SQL ERROR:" + e.getMessage());
