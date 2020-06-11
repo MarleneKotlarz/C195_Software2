@@ -113,7 +113,8 @@ public class MainScreenController implements Initializable {
     private static ObservableList<String> appointment = FXCollections.observableArrayList();
     private static ObservableList<String> types = FXCollections.observableArrayList();
  
-    private final DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm");
+    private final DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm:ss");
+        private final DateTimeFormatter localdateDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final DateTimeFormatter dateDTF = DateTimeFormatter.ofPattern("dd-MM-YYYY");
     
     /**
@@ -248,12 +249,12 @@ public class MainScreenController implements Initializable {
             String description = txtDescription.getText();
             String coType = comboType.getSelectionModel().getSelectedItem().toString();
             
-        String coStart = comboStart.getValue().toString();
-        String coEnd = comboEnd.getValue().toString();
+//        String coStart = comboStart.getValue().toString();
+//        String coEnd = comboEnd.getValue().toString();
             String appointmentId = txtApptID.getText();
 
             // Calls updateAppointment method and passes in required arguments
-            DBQuery.updateAppointment(title, description, coType, coStart, coEnd, appointmentId);
+            DBQuery.updateAppointment(title, description, coType, startSQLIn, endSQLIn, appointmentId);
             // Display appointment Tablview
             displayAppointments();        
             
@@ -308,29 +309,33 @@ public class MainScreenController implements Initializable {
  
                 //------------ Populate DatePicker & ComboBoxes ------------//
                 // Gets the startDate from the tableView, splits it in half and assigns variables to each piece
-                String startDateTimeStamp = displayAppt.getStart();
-                // Use a blank "space" as the delimiter to seperate the string
-                String[] startDateTimeStampArray = startDateTimeStamp.split(" "); 
-                // Assign element [0] of startDateTimeStampArray to the date string
-                String date = startDateTimeStampArray[0]; 
-                // Assign element [1] of startDateTimeStampArray to the startTime string
-                String startTime = startDateTimeStampArray[1]; 
-                // Convert the "date" string variable from above to datatype LocalDate
-                LocalDate populateDatePicker = LocalDate.parse(date); 
-                // Set DatePicker to date provided by populateDatePicker object value
-                datePickerAppt.setValue(populateDatePicker); 
-                // Gets the endDate from the Table view, splits it in half and assigns variables to each piece                
-                String endDateTimeStamp = displayAppt.getEnd();
-                String[] endDateTimeStampArray = endDateTimeStamp.split(" ");
-                    // String enddate = endDateTimeStampArray[0]; // Not used since endDate is not needed for ComboBox endTime
-                // Assign element [1] of endDateTimeStampArray to the end string
-                String endTime = endDateTimeStampArray[1]; 
-                // Set comboBox values 
-                comboStart.setValue(startTime);
-                comboEnd.setValue(endTime);            
+                // You have to make sure that the formatter includes the patterns that are being passed in
+                // e.g. if you have DateTime you need the formatter to show the code there is a gap between date and time
+                
+                // Time conversion start/end comboboxes
+                String startDateTime = displayAppt.getStart();
+                LocalDateTime startLDT = LocalDateTime.parse(startDateTime, localdateDTF);
+                LocalTime startLT = startLDT.toLocalTime();
+                String start = startLT.format(timeDTF);
+                
+                String endDateTime = displayAppt.getEnd();
+                LocalDateTime endLDT = LocalDateTime.parse(endDateTime, localdateDTF);
+                LocalTime endLT = endLDT.toLocalTime();
+                String end = endLT.format(timeDTF);
+                
+                // Time conversion DatePicker
+                LocalDateTime dateLDT = LocalDateTime.parse(startDateTime, localdateDTF);
+                LocalDate populateDatePicker = dateLDT.toLocalDate();
+                String date = populateDatePicker.format(dateDTF);
 
+                // Set comboBox & DatePickervalues 
+                comboStart.setValue(start);
+                comboEnd.setValue(end);            
+                datePickerAppt.setValue(populateDatePicker);
+                
+                
         }catch(Exception e){
-          System.out.println("Error editing appointment: " + e.getMessage());
+          System.out.println("Error onClickSetAppointment: " + e.getMessage());
           e.printStackTrace();
         }
 
