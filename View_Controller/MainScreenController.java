@@ -113,8 +113,9 @@ public class MainScreenController implements Initializable {
     private static ObservableList<String> appointment = FXCollections.observableArrayList();
     private static ObservableList<String> types = FXCollections.observableArrayList();
  
-    private final DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm:ss");
-        private final DateTimeFormatter localdateDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    
+    private final DateTimeFormatter localDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm");
     private final DateTimeFormatter dateDTF = DateTimeFormatter.ofPattern("dd-MM-YYYY");
     
     /**
@@ -229,19 +230,6 @@ public class MainScreenController implements Initializable {
     @FXML private void onActionUpdateAppt(ActionEvent event) {
         
         try {
-            
-            //------------ Time conversion ------------//
-            LocalDate localDate = datePickerAppt.getValue();            
-            LocalTime startTimes = LocalTime.parse(comboStart.getSelectionModel().getSelectedItem(), timeDTF);
-            LocalTime endTimes = LocalTime.parse(comboEnd.getSelectionModel().getSelectedItem(), timeDTF);
-            LocalDateTime startLDT = LocalDateTime.of(localDate, startTimes);
-            LocalDateTime endLDT = LocalDateTime.of(localDate, endTimes);		
-            ZoneId localZoneId = ZoneId.of(TimeZone.getDefault().getID());
-            ZonedDateTime startUTC = startLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
-            ZonedDateTime endUTC = endLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
-            String startSQLIn = String.valueOf(startUTC.toLocalDateTime());
-            String endSQLIn = String.valueOf(endUTC.toLocalDateTime());
-        
             // Appointment textfields needed for updateAppointment arguments
             String customerId = txtCusId.getText();
             String customerName = txtCustomer.getText();
@@ -249,12 +237,37 @@ public class MainScreenController implements Initializable {
             String description = txtDescription.getText();
             String coType = comboType.getSelectionModel().getSelectedItem().toString();
             
+            
+            //------------ Time conversion ------------//
+            LocalDate localDate = datePickerAppt.getValue();            
+            
+            ZoneId localZoneId = ZoneId.of(TimeZone.getDefault().getID());
+            
+            LocalTime startTimes = LocalTime.parse(comboStart.getSelectionModel().getSelectedItem(), timeDTF);
+            LocalDateTime startLDT = LocalDateTime.of(localDate, startTimes);
+            ZonedDateTime startUTC = startLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
+            String startSQLIn = String.valueOf(startUTC.toLocalTime());
+            // combine date and time for mysql since the start and end colums expect one dateTime
+            // this is what you insert into your database
+            String startDateTime = localDate + " " +startTimes;
+            
+            System.out.println("startSQLIn:" + startDateTime);
+            
+            LocalTime endTimes = LocalTime.parse(comboEnd.getSelectionModel().getSelectedItem(), timeDTF);
+            LocalDateTime endLDT = LocalDateTime.of(localDate, endTimes);
+            ZonedDateTime endUTC = endLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
+            String endSQLIn = String.valueOf(endUTC.toLocalTime());
+            // combine date and time for mysql since the start and end colums expect one dateTime
+            // this is what you insert into your database
+            String endDateTime = localDate + " " +endTimes;
+            
+            
 //        String coStart = comboStart.getValue().toString();
 //        String coEnd = comboEnd.getValue().toString();
             String appointmentId = txtApptID.getText();
 
             // Calls updateAppointment method and passes in required arguments
-            DBQuery.updateAppointment(title, description, coType, startSQLIn, endSQLIn, appointmentId);
+            DBQuery.updateAppointment(title, description, coType, startDateTime, endDateTime, appointmentId);
             // Display appointment Tablview
             displayAppointments();        
             
@@ -314,19 +327,22 @@ public class MainScreenController implements Initializable {
                 
                 // Time conversion start/end comboboxes
                 String startDateTime = displayAppt.getStart();
-                LocalDateTime startLDT = LocalDateTime.parse(startDateTime, localdateDTF);
+                LocalDateTime startLDT = LocalDateTime.parse(startDateTime, localDTF);
                 LocalTime startLT = startLDT.toLocalTime();
                 String start = startLT.format(timeDTF);
+
                 
                 String endDateTime = displayAppt.getEnd();
-                LocalDateTime endLDT = LocalDateTime.parse(endDateTime, localdateDTF);
+                LocalDateTime endLDT = LocalDateTime.parse(endDateTime, localDTF);
                 LocalTime endLT = endLDT.toLocalTime();
                 String end = endLT.format(timeDTF);
+
                 
                 // Time conversion DatePicker
-                LocalDateTime dateLDT = LocalDateTime.parse(startDateTime, localdateDTF);
+                LocalDateTime dateLDT = LocalDateTime.parse(startDateTime, localDTF);
                 LocalDate populateDatePicker = dateLDT.toLocalDate();
-                String date = populateDatePicker.format(dateDTF);
+
+
 
                 // Set comboBox & DatePickervalues 
                 comboStart.setValue(start);
