@@ -399,7 +399,7 @@ public class DBQuery {
     } 
     
        // Information for Appointment Tableview which displays customerName for each appointment 
-    public static ObservableList<Appointment> getAllAppointmentsByMonth(String datepickerSelection ) {
+    public static ObservableList<Appointment> getAllAppointmentsByMonth(String datepickerSelection) {
         String sqlStmt = "SELECT appointmentId, customerName, title, description, type, start, end \n" +
         "FROM appointment ap \n" +
         "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
@@ -410,6 +410,7 @@ public class DBQuery {
 
                 
         try {
+            //String datepickerSelection = null;
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
             ps.setString(1, datepickerSelection);
@@ -442,11 +443,14 @@ public class DBQuery {
                 LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
                 // Convert LocalDateTime to a String using a formatter so it can be passed in the .add() method
                 String formattedStartTime = ldtStartOutput.format(localDTF);
+//                LocalDate ldtDatePicker = ldtStartOutput.toLocalDate();
+//                String datepickerSelection = ldtDatePicker.format(dateDTF);
                 
                 // END TIME //                
                 ZonedDateTime zdtEndOutput = endUTC.atZone(ZoneId.of("UTC"));
                 ZonedDateTime zdtEndOutToLocalTimeZone = zdtEndOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
                 LocalDateTime ldtEndOutput = zdtEndOutToLocalTimeZone.toLocalDateTime();
+                
                 String formattedEndTime = ldtEndOutput.format(localDTF);
 
                 
