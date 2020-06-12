@@ -17,11 +17,16 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
@@ -349,6 +354,7 @@ public class DBQuery {
             ps = conn.prepareStatement(sqlStmt);
             rs = ps.executeQuery(); // submits entire SQL statement
 
+
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
                 String cusName = rs.getString("customerName");
@@ -360,7 +366,7 @@ public class DBQuery {
                 
                 //Convert timestamp appointment table "start" & "end" column time from UTC to LocalDateTime that the user selected
                 LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
-                LocalDateTime endUTC = rs.getTimestamp("start").toLocalDateTime();
+                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
                 
 
                 //-------- Time conversion --------//
@@ -384,15 +390,141 @@ public class DBQuery {
                 
                 // Assign parameters to .add method
                 appointmentList.add(new Appointment(apptId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
-            }
+
+            }            
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return appointmentList;          
     } 
+    
+       // Information for Appointment Tableview which displays customerName for each appointment 
+    public static ObservableList<Appointment> getAllAppointmentsByMonth(String datepickerSelection ) {
+        String sqlStmt = "SELECT appointmentId, customerName, title, description, type, start, end \n" +
+        "FROM appointment ap \n" +
+        "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
+        "WHERE month(start) = ? \n" + // Insert the datepickerSelection into this variable
+        "ORDER BY appointmentId";
+        
+        
+
+                
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt);
+            ps.setString(1, datepickerSelection);
+            rs = ps.executeQuery(); // submits entire SQL statement
+
+            
+
+            while(rs.next()) {
+                String apptId = rs.getString("appointmentId");
+                String cusName = rs.getString("customerName");
+                String title = rs.getString("title");
+                String descr = rs.getString("description");
+                String type = rs.getString("type");            
+                //String start = rs.getString("start");
+                //String end = rs.getString("end");
+                
+                //Convert timestamp appointment table "start" & "end" column time from UTC to LocalDateTime that the user selected
+                LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
+                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
+                
+
+                //-------- Time conversion --------//
+                
+                // START TIME //
+                // Combines dateTime with a time-zone to create a ZonedDateTime . Here it is 'UTC'(ex: 2020-06-10T13:00Z[UTC])
+                ZonedDateTime zdtStartOutput = startUTC.atZone(ZoneId.of("UTC"));
+                // Returns a copy of dateTime with a different time-zone, retaining the instant. Here the zone is selected by systemDefault(ex: 2020-06-10T09:00-04:00[America/New_York])
+                ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
+                // Convert local zone to localDateTime
+                LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
+                // Convert LocalDateTime to a String using a formatter so it can be passed in the .add() method
+                String formattedStartTime = ldtStartOutput.format(localDTF);
+                
+                // END TIME //                
+                ZonedDateTime zdtEndOutput = endUTC.atZone(ZoneId.of("UTC"));
+                ZonedDateTime zdtEndOutToLocalTimeZone = zdtEndOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
+                LocalDateTime ldtEndOutput = zdtEndOutToLocalTimeZone.toLocalDateTime();
+                String formattedEndTime = ldtEndOutput.format(localDTF);
+
+                
+                // Assign parameters to .add method
+                appointmentList.add(new Appointment(apptId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
+
+            }            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return appointmentList;          
+    } 
+    
+        // Information for Appointment Tableview which displays customerName for each appointment 
+    public static ObservableList<Appointment> getAllAppointmentsByWeek(String datepickerSelection) {
+        String sqlStmt = "SELECT appointmentId, customerName, title, description, type, start, end \n" +
+        "FROM appointment ap \n" +
+        "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
+        "WHERE week(start) = ? \n" + // Insert the datepickerSelection into this variable minus -1 (so if it's the 24th week of the year, subtract 1 from that number)
+        "ORDER BY appointmentId";
+        
+        // you need to include the "datepickerSelection" in your SQL statement
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt);
+            ps.setString(1, datepickerSelection);            
+            rs = ps.executeQuery(); // submits entire SQL statement
+
+
+            while(rs.next()) {
+                String apptId = rs.getString("appointmentId");
+                String cusName = rs.getString("customerName");
+                String title = rs.getString("title");
+                String descr = rs.getString("description");
+                String type = rs.getString("type");            
+                //String start = rs.getString("start");
+                //String end = rs.getString("end");
+                
+                //Convert timestamp appointment table "start" & "end" column time from UTC to LocalDateTime that the user selected
+                LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
+                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
+                
+
+                //-------- Time conversion --------//
+                
+                // START TIME //
+                // Combines dateTime with a time-zone to create a ZonedDateTime . Here it is 'UTC'(ex: 2020-06-10T13:00Z[UTC])
+                ZonedDateTime zdtStartOutput = startUTC.atZone(ZoneId.of("UTC"));
+                // Returns a copy of dateTime with a different time-zone, retaining the instant. Here the zone is selected by systemDefault(ex: 2020-06-10T09:00-04:00[America/New_York])
+                ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
+                // Convert local zone to localDateTime
+                LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
+                // Convert LocalDateTime to a String using a formatter so it can be passed in the .add() method
+                String formattedStartTime = ldtStartOutput.format(localDTF);
+                
+                // END TIME //                
+                ZonedDateTime zdtEndOutput = endUTC.atZone(ZoneId.of("UTC"));
+                ZonedDateTime zdtEndOutToLocalTimeZone = zdtEndOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
+                LocalDateTime ldtEndOutput = zdtEndOutToLocalTimeZone.toLocalDateTime();
+                String formattedEndTime = ldtEndOutput.format(localDTF);
+
+                
+                // Assign parameters to .add method
+                appointmentList.add(new Appointment(apptId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
+
+            }            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return appointmentList;          
+    } 
+    
+    
+    
+    
 
 ////////// ADD APPOINTMENT //////////
-    
+
     public static String addAppointment(String customerId, String title, String description, String type, String start, String end) {
 
         String sqlStmt = "INSERT INTO appointment (customerId, userId, title, description, location, contact, type, url, start, end, createDate, createdBy, lastUpdate, lastUpdateBy) \n" + 
@@ -437,45 +569,7 @@ public class DBQuery {
             ps.execute();
             
             
-            LocalDateTime ldtStart = LocalDateTime.parse(start, localDTF);
-            
-            ZoneId zid = ZoneId.systemDefault();
-            ZonedDateTime startUTC = ldtStart.atZone(zid).withZoneSameInstant(ZoneId.of("UTC"));
-            String startLocal = String.valueOf(startUTC.toLocalDateTime());
-            
-            System.out.println("startLocal: " + startLocal);
-            
-            LocalDateTime ldtEnd = LocalDateTime.parse(end, localDTF);            
-            ZonedDateTime endUTC = ldtEnd.atZone(zid).withZoneSameInstant(ZoneId.of("UTC"));
-            String endLocal = String.valueOf(endUTC.toLocalDateTime());    
-            
-            
-                            //-------- Time conversion --------//
-                //Convert start time from UTC to LocalDateTime that the user selected
-                // Set utcStartTime timestamp value to UTC output from appointmentDB table start column (ex: 2020-06-10 13:00:00.0)
-                
-//                Timestamp utcStartTime = Timestamp.valueOf(start);
-//                // Convert timestamp to localdattime format (ex: 2020-06-10T13:00)
-//                LocalDateTime ldtStartInput = utcStartTime.toLocalDateTime(); 
-//                // Select the zone date time that includes the string 'UTC' (ex: 2020-06-10T13:00Z[UTC])
-//                ZonedDateTime zdtStartOutput = ldtStartInput.atZone(ZoneId.of("UTC")); 
-//                // Convert UTC zone to local time zone (ex: 2020-06-10T09:00-04:00[America/New_York])
-//                ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString())); 
-//                // Convert local zone to local data time (ex: 2020-06-10T09:00)
-//                LocalDateTime ldtOutput = zdtStartOutToLocalTimeZone.toLocalDateTime(); 
-//                // reassigns the start variable to LocalDateTime String format (ex: 2020-06-10 09:00:00)
-//                start = ldtOutput.format(localDTF); 
-
-
-                //-------- Convert end time from UTC to local data time that the user selected --------//
-                // same as above converstion only for "end time"
-//                Timestamp utcEndTime = Timestamp.valueOf(end); 
-//                LocalDateTime ldtEndInput = utcEndTime.toLocalDateTime(); 
-//                ZonedDateTime zdtEndOutput = ldtEndInput.atZone(ZoneId.of("UTC")); 
-//                ZonedDateTime zdtEndOutToLocalTimeZone = zdtEndOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
-//                LocalDateTime ldtEndOutput = zdtEndOutToLocalTimeZone.toLocalDateTime();
-//                end = ldtEndOutput.format(localDTF);
-            
+      
         }catch(SQLException e) {
             System.out.println("Update Appointment SQL ERROR:" + e.getMessage());
     }
