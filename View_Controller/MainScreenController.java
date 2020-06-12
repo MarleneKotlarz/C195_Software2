@@ -18,6 +18,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.time.temporal.WeekFields;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.TimeZone;
@@ -121,7 +123,7 @@ public class MainScreenController implements Initializable {
     private final DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm");
     private final DateTimeFormatter dateDTF = DateTimeFormatter.ofPattern("dd-MM-YYYY");
     private final DateTimeFormatter monthDTF = DateTimeFormatter.ofPattern("MM");
-    
+
     
     /**
      * Initializes the controller class.
@@ -148,8 +150,12 @@ public class MainScreenController implements Initializable {
         colStart.setCellValueFactory(new PropertyValueFactory<>("start"));
         colEnd.setCellValueFactory(new PropertyValueFactory<>("end"));
 
+        
         // Populate comboType with Appointment Types
-        comboType.setItems(getAllTypes());
+        comboType.setItems(getAllTypes());  // --------------------------- original don't jack this up
+
+        
+        
         // Set up comboBox ObservableLists startTimes/ endTimes
         startTimes.addAll("08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00");
         endTimes.addAll("08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00");
@@ -385,8 +391,7 @@ public class MainScreenController implements Initializable {
         types.removeAll(types);
         types.addAll("English", "German", "Spanish", "French", "Chinese", "Russian", "Indian");
         return types;
-    }
-    
+    }  
 
 
     @FXML private void onActionRbtByMonth(ActionEvent event) {
@@ -401,32 +406,17 @@ public class MainScreenController implements Initializable {
         alert.setContentText("Please select a month using the calendar to the right.");
         alert.showAndWait();
         } 
-        else{
-            // send this month number to the dbquery.getAllAppointmentsByMonth()
-            
- //--------------------------------------------------------------- start editing
- 
+        else {
             DBQuery.appointmentList.clear(); // must clear the tableview before filling it again
-            String startTime = selectAppt.getStart();
-            //LocalDateTime startLDT = LocalDateTime.parse(startTime, dateDTF);
-            //LocalDate localDate = startLDT.toLocalDate();
-            LocalDate localDate = LocalDate.now();
-            String date = localDate.format(monthDTF).toString();
-            
-//           LocalDateTime startLDT = LocalDateTime.parse(startTime, dateDTF);
-//            LocalDate populateDatePicker = startLDT.toLocalDate();
-//            LocalDate localDT = LocalDate.parse(startTime,monthDTF);
 
-            datePickerView.setValue(localDate);
+            LocalDate date = datePickerView.getValue();
+            String monthDatepicker = date.format(monthDTF);
+         
             
+            System.out.println("datepickerSelection:" + monthDatepicker);
             
-            
-            System.out.println("datepickerSelection:" + date);
-            tableViewAppt.setItems(DBQuery.getAllAppointmentsByMonth(date)); // replace "7" with the date picker month
-            //tableViewAppt.setItems(DBQuery.getAllAppointmentsByMonth("07"));
-            
-            
-  //--------------------------------------------------------------- end editing
+            tableViewAppt.setItems(DBQuery.getAllAppointmentsByMonth(monthDatepicker)); 
+
         }
 }
 
@@ -441,21 +431,27 @@ public class MainScreenController implements Initializable {
         else {
             // send this week number to the dbquery.getAllAppointmentsByWeek()
             DBQuery.appointmentList.clear(); // must clear the tableview before filling it again
-            tableViewAppt.setItems(DBQuery.getAllAppointmentsByWeek("23")); // replace 23 with the week number of the selected week
-                                                                            // this must be one minus the current week so if it's the 24th week of the year the number is 23
+            LocalDate date = datePickerView.getValue();
+            WeekFields weekFields = WeekFields.of(Locale.getDefault());
+            int weekNumber = date.get(weekFields.weekOfWeekBasedYear());
+            String weekDate = Integer.toString(weekNumber-1);
+            
+            //tableViewAppt.setItems(DBQuery.getAllAppointmentsByWeek("23")); // replace 23 with the week number of the selected week this must be one minus the current week so if it's the 24th week of the year the number is 23
+            tableViewAppt.setItems(DBQuery.getAllAppointmentsByWeek(weekDate));  
         }
     }
 
+    
     @FXML private void onActionRbtViewAll(ActionEvent event) {
         DBQuery.appointmentList.clear();
         tableViewAppt.setItems(DBQuery.getAllAppointments());
-        
     }
 
+    
     @FXML private void onActionDatePickerTableView(ActionEvent event) {
         isWeekMonthDatePickerSelected = true;
-        
     }
+    
     
     ////////// CLEAR APPOINTMENTS TEXTFIELDS //////////
     @FXML void onActionResetAppt(ActionEvent event) {
