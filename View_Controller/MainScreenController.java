@@ -120,6 +120,8 @@ public class MainScreenController implements Initializable {
     private final DateTimeFormatter localDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm");
     private final DateTimeFormatter dateDTF = DateTimeFormatter.ofPattern("dd-MM-YYYY");
+    private final DateTimeFormatter monthDTF = DateTimeFormatter.ofPattern("MM");
+    
     
     /**
      * Initializes the controller class.
@@ -258,7 +260,7 @@ public class MainScreenController implements Initializable {
             
 
             
-     LocalDate localDate = datePickerAppt.getValue();
+        LocalDate localDate = datePickerAppt.getValue();
         
         // Convert String comboBox to LocalTime type by using parse method and assign it to selected item
         LocalTime startTimes = LocalTime.parse(comboStart.getSelectionModel().getSelectedItem(), timeDTF);
@@ -301,6 +303,8 @@ public class MainScreenController implements Initializable {
         }  
     }
     
+    
+    ////////// DELETE APPOINTMENT //////////
     @FXML private void onActionDeleteAppt(ActionEvent event) {
         
         // Selected appointment
@@ -336,53 +340,46 @@ public class MainScreenController implements Initializable {
         
         // Poluate textfields with data from Appointment TableView so they can be updated
         try {
-
-                // Set data from tableview to textfields
-                txtApptID.setText(displayAppt.getApptId());
-                txtCusId.setText(displayAppt.getCusId());
-                txtCustomer.setText(displayAppt.getCusName());
-                txtTitle.setText(displayAppt.getTitle());
-                txtDescription.setText(displayAppt.getDescription());
-                comboType.setValue(displayAppt.getType());
+            // Set data from tableview to textfields
+            txtApptID.setText(displayAppt.getApptId());
+            txtCusId.setText(displayAppt.getCusId());
+            txtCustomer.setText(displayAppt.getCusName());
+            txtTitle.setText(displayAppt.getTitle());
+            txtDescription.setText(displayAppt.getDescription());
+            comboType.setValue(displayAppt.getType());
  
-                //------------ Populate DatePicker & ComboBoxes ------------//
-                // Gets the startDate from the tableView, splits it in half and assigns variables to each piece
-                // You have to make sure that the formatter includes the patterns that are being passed in
-                // e.g. if you have DateTime you need the formatter to show the code there is a gap between date and time
+            //------------ Populate DatePicker & ComboBoxes ------------//
+            // Gets the startDate from the tableView, splits it in half and assigns variables to each piece
+            // You have to make sure that the formatter includes the patterns that are being passed in
+            // e.g. if you have DateTime you need the formatter to show the code there is a gap between date and time
+               
+            // Time conversion start/end comboboxes
+            String startDateTime = displayAppt.getStart();
+            LocalDateTime startLDT = LocalDateTime.parse(startDateTime, localDTF);
+            LocalTime startLT = startLDT.toLocalTime();
+            String start = startLT.format(timeDTF);
                 
-                // Time conversion start/end comboboxes
-                String startDateTime = displayAppt.getStart();
-                LocalDateTime startLDT = LocalDateTime.parse(startDateTime, localDTF);
-                LocalTime startLT = startLDT.toLocalTime();
-                String start = startLT.format(timeDTF);
-
+            String endDateTime = displayAppt.getEnd();
+            LocalDateTime endLDT = LocalDateTime.parse(endDateTime, localDTF);
+            LocalTime endLT = endLDT.toLocalTime();
+            String end = endLT.format(timeDTF);
                 
-                String endDateTime = displayAppt.getEnd();
-                LocalDateTime endLDT = LocalDateTime.parse(endDateTime, localDTF);
-                LocalTime endLT = endLDT.toLocalTime();
-                String end = endLT.format(timeDTF);
-
-                
-                // Time conversion DatePicker
-                LocalDateTime dateLDT = LocalDateTime.parse(startDateTime, localDTF);
-                LocalDate populateDatePicker = dateLDT.toLocalDate();
-
-
-
-                // Set comboBox & DatePickervalues 
-                comboStart.setValue(start);
-                comboEnd.setValue(end);            
-                datePickerAppt.setValue(populateDatePicker);
-                
+            // Time conversion DatePicker
+            LocalDateTime dateLDT = LocalDateTime.parse(startDateTime, localDTF);
+            LocalDate populateDatePicker = dateLDT.toLocalDate();
+            // Set comboBox & DatePickervalues 
+            comboStart.setValue(start);
+            comboEnd.setValue(end);            
+            datePickerAppt.setValue(populateDatePicker);               
                 
         }catch(Exception e){
           System.out.println("Error onClickSetAppointment: " + e.getMessage());
           e.printStackTrace();
         }
 
-
     }    
         
+    
     ////////// APPOINTMENT TYPES //////////
     public static ObservableList <String> getAllTypes() {
         types.removeAll(types);
@@ -391,57 +388,68 @@ public class MainScreenController implements Initializable {
     }
     
 
-    @FXML private void onActionDatePickerAppt(ActionEvent event) {
-        
-        
-    }
- 
-    @FXML void onActionComboStart(ActionEvent event) {
-    }
-   
-    
-    @FXML void onActionComboEnd(ActionEvent event) {
-    }
-           
-    
-    @FXML private void onActionSearchAppt(ActionEvent event) {
-    }
-    
-
-
-    
 
     @FXML private void onActionRbtByMonth(ActionEvent event) {
-                if (isWeekMonthDatePickerSelected == null) {
-        System.out.println("Please select a month from the date picker");
-    }
-                else{
+        
+        Appointment selectAppt = new Appointment();
+        
+        if (isWeekMonthDatePickerSelected == null) {
+        // Set AlertBox with Button
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Selection Missing");     
+        alert.setHeaderText("Information");
+        alert.setContentText("Please select a month using the calendar to the right.");
+        alert.showAndWait();
+        } 
+        else{
+            // send this month number to the dbquery.getAllAppointmentsByMonth()
+            
+ //--------------------------------------------------------------- start editing
+ 
+            DBQuery.appointmentList.clear(); // must clear the tableview before filling it again
+            String startTime = selectAppt.getStart();
+            //LocalDateTime startLDT = LocalDateTime.parse(startTime, dateDTF);
+            //LocalDate localDate = startLDT.toLocalDate();
+            LocalDate localDate = LocalDate.now();
+            String date = localDate.format(monthDTF).toString();
+            
+//           LocalDateTime startLDT = LocalDateTime.parse(startTime, dateDTF);
+//            LocalDate populateDatePicker = startLDT.toLocalDate();
+//            LocalDate localDT = LocalDate.parse(startTime,monthDTF);
 
-// send this month number to the dbquery.getAllAppointmentsByMonth()
-        System.out.println("clearing the appointment list");
-        DBQuery.appointmentList.clear(); // must clear the tableview before filling it again
-        System.out.println("updating table view by mounth");
-        tableViewAppt.setItems(DBQuery.getAllAppointmentsByMonth("7")); // replace "7" with the date picker month
-
-    }
+            datePickerView.setValue(localDate);
+            
+            
+            
+            System.out.println("datepickerSelection:" + date);
+            tableViewAppt.setItems(DBQuery.getAllAppointmentsByMonth(date)); // replace "7" with the date picker month
+            //tableViewAppt.setItems(DBQuery.getAllAppointmentsByMonth("07"));
+            
+            
+  //--------------------------------------------------------------- end editing
+        }
 }
 
     @FXML private void onActionRbtByWeek(ActionEvent event) {
         if (isWeekMonthDatePickerSelected == null) {
-        System.out.println("Please select a week from the date picker");
-    } 
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Selection Missing");     
+        alert.setHeaderText("Information");
+        alert.setContentText("Please select a week using the calendar to the right.");
+        alert.showAndWait();
+        } 
         else {
-
-// send this week number to the dbquery.getAllAppointmentsByWeek()
-        System.out.println("clearing the appointment list");
-        DBQuery.appointmentList.clear(); // must clear the tableview before filling it again
-        System.out.println("updating table view by week");
-        tableViewAppt.setItems(DBQuery.getAllAppointmentsByWeek("23")); // replace 23 with the week number of the selected week
-                                                                        // this must be one minus the current week so if it's the 24th week of the year the number is 23
+            // send this week number to the dbquery.getAllAppointmentsByWeek()
+            DBQuery.appointmentList.clear(); // must clear the tableview before filling it again
+            tableViewAppt.setItems(DBQuery.getAllAppointmentsByWeek("23")); // replace 23 with the week number of the selected week
+                                                                            // this must be one minus the current week so if it's the 24th week of the year the number is 23
         }
     }
 
     @FXML private void onActionRbtViewAll(ActionEvent event) {
+        DBQuery.appointmentList.clear();
+        tableViewAppt.setItems(DBQuery.getAllAppointments());
+        
     }
 
     @FXML private void onActionDatePickerTableView(ActionEvent event) {
@@ -462,8 +470,7 @@ public class MainScreenController implements Initializable {
         comboStart.setValue(null);
         comboEnd.setValue(null);
         
-        tableViewAppt.setItems(DBQuery.getAllAppointments());     
-
+        tableViewAppt.setItems(DBQuery.getAllAppointments());    
     }
     
     ////////// DISPLAY CUSTOMER SCREEN //////////
@@ -481,7 +488,7 @@ public class MainScreenController implements Initializable {
         stage.setScene(new Scene(scene));
         stage.show();        
     }
-        
+
     
     @FXML private void onActionLogout(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
@@ -490,5 +497,27 @@ public class MainScreenController implements Initializable {
         stage.show();        
     }
 
+    
+    
+    
+    
+    
+    
+    @FXML private void onActionDatePickerAppt(ActionEvent event) {          
+    }
+ 
+    
+    @FXML void onActionComboStart(ActionEvent event) {
+    }
+   
+    
+    @FXML void onActionComboEnd(ActionEvent event) {
+    }
+           
+    
+    @FXML private void onActionSearchAppt(ActionEvent event) {
+    }
+    
+    
     
 }
