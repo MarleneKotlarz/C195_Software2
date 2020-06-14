@@ -96,6 +96,7 @@ public class MainScreenController implements Initializable {
     ////////// APPOINTMENT TABLEVIEW //////////
     @FXML private TableView<Appointment> tableViewAppt;
     @FXML private TableColumn<Appointment, String> colApptId;
+    @FXML private TableColumn<Appointment, String> colApptCusId;
     @FXML private TableColumn<Appointment, String> colCustomerName;
     @FXML private TableColumn<Appointment, String> colTitle;
     @FXML private TableColumn<Appointment, String> colDescription;
@@ -152,6 +153,7 @@ public class MainScreenController implements Initializable {
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
         colStart.setCellValueFactory(new PropertyValueFactory<>("start"));
         colEnd.setCellValueFactory(new PropertyValueFactory<>("end"));
+        colApptCusId.setCellValueFactory(new PropertyValueFactory<>("cusId"));
 
         
         // Populate comboType with Appointment Types
