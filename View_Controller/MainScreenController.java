@@ -113,6 +113,9 @@ public class MainScreenController implements Initializable {
     String combinedDateTimeEnd;
     Boolean isWeekMonthDatePickerSelected;
     
+
+    
+    
     private static ObservableList<String> startTimes = FXCollections.observableArrayList();    
     private static ObservableList<String> endTimes = FXCollections.observableArrayList();
     private static ObservableList<String> appointment = FXCollections.observableArrayList();
@@ -157,13 +160,16 @@ public class MainScreenController implements Initializable {
         
         
         // Set up comboBox ObservableLists startTimes/ endTimes
-        startTimes.addAll("08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00");
-        endTimes.addAll("08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00");
+        startTimes.addAll("07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00");
+        endTimes.addAll("07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00");
         comboStart.setItems(startTimes);
         comboEnd.setItems(endTimes); 
 
+        
+
     }    
 
+    
     
     ////////// LOOKUP CUSTOMER //////////
     @FXML private void onActionSearchCustomer(ActionEvent event) {
@@ -203,8 +209,10 @@ public class MainScreenController implements Initializable {
     @FXML private void onActionAddAppt(ActionEvent event) {
         
         //------------ Time conversion ------------//
+        
         // Get date from datePicker to use it for the localTime assignment
         LocalDate localDate = datePickerAppt.getValue();
+        
         
         // Convert String comboBox to LocalTime type by using parse method and assign it to selected item
         LocalTime startTimes = LocalTime.parse(comboStart.getSelectionModel().getSelectedItem(), timeDTF);
@@ -216,40 +224,54 @@ public class MainScreenController implements Initializable {
         ZonedDateTime startUTC = startLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC")); // use ZoneId.of("UTC") or (localZoneId)
         // Convert from UTC to LocalDateTime so it can be inserted into the MYSQL database
         String startSQLIn = String.valueOf(startUTC.toLocalDateTime());
-
-
-//========================code above is good=========
+        
         // Convert String comboBox to LocalTime type by using parse method and assign it to selected item
         LocalTime endTimes = LocalTime.parse(comboEnd.getSelectionModel().getSelectedItem(), timeDTF);
         // Assign localDate and localTime to LocalDateTime
         LocalDateTime endLDT = LocalDateTime.of(localDate, endTimes);
-
         // Get local zoneID system default - use ZoneId.of(TimeZone.getDefault().getID()) or systemDefault()
-                localZoneId = ZoneId.of(TimeZone.getDefault().getID());
-                
+        localZoneId = ZoneId.of(TimeZone.getDefault().getID());
         // Convert from LocalDateTime to UTC 
         ZonedDateTime endUTC = endLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
-   
         // Convert from UTC to LocalDateTime so it can be inserted into the MYSQL database
         String endSQLIn = String.valueOf(endUTC.toLocalDateTime());
-//========================code above is good=========
 
-      
-        
+
         // Appointment textfields - User Input will be displayed in the appointment tableView
         String customerId = txtCusId.getText();
-//        String customerName = txtCustomer.getText();
         String title = txtTitle.getText();
         String description = txtDescription.getText();
         String coType = comboType.getSelectionModel().getSelectedItem().toString();
-        // Calls addAppointment method and passes in the required parameters
-        DBQuery.addAppointment(customerId, title, description, coType, startSQLIn, endSQLIn);
+        
+        
+        //----------------------- Workn on it starts
+        // Valid Bussiness Hours
+
+        if(DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn) && DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes) == true) {
+            // Calls addAppointment method and passes in the required parameters
+            DBQuery.addAppointment(customerId, title, description, coType, startSQLIn, endSQLIn);  
+        }else{
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error"); 
+            alert.setContentText("Please select an appointment time that is within business hours (08:00 - 17:00) and do not overlap existing appointments!");
+            alert.showAndWait();
+        }
+        
+//        DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn);
+//        DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes);
+
+        
+        //----------------------- Workn on it ends
+        
+
+        
+        
         // Display appointment tableview
         displayAppointments();
 
     }
     
-    
+   
     ////////// UPDATE APPOINTMENT //////////
     @FXML private void onActionUpdateAppt(ActionEvent event) {
         
