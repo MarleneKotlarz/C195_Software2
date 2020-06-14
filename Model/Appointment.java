@@ -22,12 +22,16 @@ public class Appointment {
     String start;
     String end;    
 
+    public Appointment() {
+    }
+
 
 
     
     // Constructor used for appointment TableView 
-    public Appointment(String id, String name, String title, String description, String type, String start, String end) {
+    public Appointment(String id, String cusId, String name, String title, String description, String type, String start, String end) {
         this.apptId = id;
+        this.cusId = cusId;
         this.cusName = name;
         this.title = title;
         this.description = description;
@@ -35,6 +39,20 @@ public class Appointment {
         this.start = start;
         this.end = end;
     }
+    
+    // Constructor add appointment
+
+    public Appointment(String apptId, String cusName, String title, String description, String type, String start, String end) {
+        this.apptId = apptId;
+        this.cusName = cusName;
+        this.title = title;
+        this.description = description;
+        this.type = type;
+        this.start = start;
+        this.end = end;
+    }
+    
+    
 
     //Constructor and addAppointment  
     public Appointment(String cusId, String title, String description, String type, String start, String end) {
