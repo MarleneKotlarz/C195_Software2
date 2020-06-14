@@ -346,7 +346,7 @@ public class DBQuery {
     
     // Information for Appointment Tableview which displays customerName for each appointment 
     public static ObservableList<Appointment> getAllAppointments() {
-        String sqlStmt = "SELECT appointmentId, customerName, title, description, type, start, end \n" +
+        String sqlStmt = "SELECT appointmentId, ap.customerId, customerName, title, description, type, start, end \n" +
         "FROM appointment ap \n" +
         "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
         "ORDER BY appointmentId";
@@ -359,6 +359,7 @@ public class DBQuery {
 
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
+                String cusId = rs.getString("customerId");
                 String cusName = rs.getString("customerName");
                 String title = rs.getString("title");
                 String descr = rs.getString("description");
@@ -389,7 +390,7 @@ public class DBQuery {
 
                 
                 // Assign parameters to .add method
-                appointmentList.add(new Appointment(apptId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
+                appointmentList.add(new Appointment(apptId, cusId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
 
             }            
         } catch (SQLException e) {
