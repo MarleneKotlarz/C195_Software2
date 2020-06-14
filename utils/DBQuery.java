@@ -50,6 +50,7 @@ public class DBQuery {
     public static DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm:ss");
     public static DateTimeFormatter dateDTF = DateTimeFormatter.ofPattern("dd-MM-YYYY");
     
+    
 //--------------------------------------------------------    
 //////////////////// User login Screen ////////////////////
 //--------------------------------------------------------    
@@ -57,7 +58,6 @@ public class DBQuery {
     public static boolean checkLogin(String userNameInput, String passwordInput) {
         String sqlStmt = "SELECT userName, password FROM user WHERE userName = ? && password = ?";  // ? is a placeholder value
         try {
-            conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
             // criteria for the statement
             ps.setString(1, userNameInput); // replaces first ? in SQL statement
@@ -75,10 +75,12 @@ public class DBQuery {
                 return false;
             }
         } catch (SQLException e) {
-                System.out.println("Error: " + e.getMessage());
-                return false;
+            System.out.println(e.getMessage()); 
         }
+        return false;
     }
+    
+    
 //--------------------------------------------------------      
 //////////////////// CUSTOMER SCREEN ////////////////////
 //--------------------------------------------------------      
@@ -361,8 +363,6 @@ public class DBQuery {
                 String title = rs.getString("title");
                 String descr = rs.getString("description");
                 String type = rs.getString("type");            
-                //String start = rs.getString("start");
-                //String end = rs.getString("end");
                 
                 //Convert timestamp appointment table "start" & "end" column time from UTC to LocalDateTime that the user selected
                 LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
@@ -510,9 +510,56 @@ public class DBQuery {
         }
         return appointmentList;          
     } 
+  
+  
+public static Boolean checkAppointmentOutsideBusinessHours(LocalTime comboStartSelection, LocalTime comboEndSelection) {
+
+        LocalTime openingTime = LocalTime.of(8, 0); // 08:00 AM
+        LocalTime closingTime = LocalTime.of(17, 0); // 17:00 PM
+        Boolean isApptValid = true;
+     
+        // Checks if appt is within Business Hours
+        if(comboStartSelection.isBefore(openingTime) || comboEndSelection.isAfter(closingTime))
+            isApptValid = false;
+           
+        
+        return isApptValid;    
+    } 
     
     
+public static Boolean checkOverlappingAppointments(String comboStartSelection, String comboEndSelection) {
+
+        String sqlStmt = "SELECT start, end FROM appointment";
+        Boolean isApptValid = true;
+        
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt);
+            rs = ps.executeQuery(); // submits entire SQL statement
+
+
+            while(rs.next()) {
+                LocalDateTime dbStartUTC = rs.getTimestamp("start").toLocalDateTime();
+                LocalDateTime dbEndUTC = rs.getTimestamp("end").toLocalDateTime();  
+                
+                LocalDateTime comboStart = LocalDateTime.parse(comboStartSelection);
+                LocalDateTime comboEnd = LocalDateTime.parse(comboEndSelection);
+                
+                // For overlapping appointment
+                // Checks if the appointment is within the timeframe of an existing appointment
+                if(comboStart.isAfter(dbStartUTC) && comboEnd.isBefore(dbEndUTC) || 
+                     comboEnd.isAfter(dbStartUTC) && comboEnd.isBefore(dbEndUTC) )
+                    isApptValid = false;
+           }
+   
+            
+        } catch (SQLException e) {
+            System.out.println(e.getMessage()); 
+        }
+        return isApptValid;    
+    }
     
+
     
 
 ////////// ADD APPOINTMENT //////////
