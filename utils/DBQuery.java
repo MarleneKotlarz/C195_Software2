@@ -51,9 +51,9 @@ public class DBQuery {
     public static DateTimeFormatter dateDTF = DateTimeFormatter.ofPattern("dd-MM-YYYY");
     
     
-//--------------------------------------------------------    
-//////////////////// User login Screen ////////////////////
-//--------------------------------------------------------    
+//------------------------------------//    
+//-------- User login Screen --------//
+//----------------------------------//    
     
     public static boolean checkLogin(String userNameInput, String passwordInput) {
         String sqlStmt = "SELECT userName, password FROM user WHERE userName = ? && password = ?";  // ? is a placeholder value
@@ -81,12 +81,12 @@ public class DBQuery {
     }
     
     
-//--------------------------------------------------------      
-//////////////////// CUSTOMER SCREEN ////////////////////
-//--------------------------------------------------------      
+//----------------------------------//      
+//-------- CUSTOMER SCREEN --------//
+//--------------------------------//     
     
     
-////////// POPULATE CITY COMBOBOX //////////
+//-------- POPULATE CITY COMBOBOX --------//
     
     public static ObservableList<String> getAllCities()  {
         String sqlStmt = "SELECT city FROM city";
@@ -107,7 +107,7 @@ public class DBQuery {
     }
     
 
-////////// GET CITY ID  //////////
+//-------- GET CITY ID  --------//
     
     public static String getCityId(String city) {
     String sqlStmt = "SELECT cityId FROM city WHERE city = ?"; // ? is a placeholder value
@@ -131,7 +131,7 @@ public class DBQuery {
     }
     
 
-////////// GET ADDRESSID FROM LAST ADDED CUSTOMER //////////    
+//-------- GET ADDRESSID FROM LAST ADDED CUSTOMER --------//    
     
     public static String getAddressIdFromLastCustomerAdded() {
     String sqlStmt = "SELECT addressId FROM address Order By addressId DESC Limit 1"; // ? is a placeholder value
@@ -153,7 +153,7 @@ public class DBQuery {
     }
     
     
-////////// GET CUSTOMER INFO //////////
+//-------- GET CUSTOMER INFO --------//
     
     public static ObservableList<Customer> getAllCustomers() {
         String sqlStmt = "SELECT customerId, customerName, address, address2, city, postalCode, country, phone\n" +            
@@ -187,7 +187,7 @@ public class DBQuery {
        
     
     
-////////// ADD ADDRESS //////////
+//-------- ADD ADDRESS --------//
 
     public static String addAddress(String address, String address2, String cityId, String postalCode, String phone) { // passing in addressDB table input fields
         String sqlStmt = "INSERT INTO address (address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, ?, ?, ?, now(), 'test', now(), 'test')";
@@ -209,7 +209,7 @@ public class DBQuery {
         return null;
     }
     
-////////// ADD CUSTOMER //////////
+//-------- ADD CUSTOMER --------//
     
     public static String addCustomer(String customerName, String addressId) { // passing in customerDB table input fields
         String sqlStmt = "INSERT INTO customer (customerName, addressId, active, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, '1', now(), 'test', now(), 'test')";
@@ -227,7 +227,7 @@ public class DBQuery {
     }    
    
     
-////////// UPDATE CUSTOMER //////////
+//-------- UPDATE CUSTOMER --------//
     
     public static void updateCustomer(String customerId, String name, String address, String address2, String cityId, String postalCode, String phone) throws SQLException {
 
@@ -269,7 +269,7 @@ public class DBQuery {
     }
     
     
-////////// DELETE CUSTOMER AND ASSOCIATED ADDRESS //////////
+//-------- DELETE CUSTOMER AND ASSOCIATED ADDRESS --------//
 
     public static String deleteCustomer(String customerId) {
         try {
@@ -284,19 +284,26 @@ public class DBQuery {
                 
                 while(rs.next()) { // assign rs to addressID for sqlStmt3 "?" placeholder variable
                     addressId = rs.getString(1);
-                }            
+                }     
 
-            // Delete CustomerID first as it's the parent to the AddressDB table
-            String sqlStmt2 = "DELETE FROM customer WHERE customerId = ?";
+            // Delete first the appointmentId where customerId is being referenced as it is the parent to the customerId
+            String sqlStmt2 = "DELETE FROM appointment WHERE customerId = ?";
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt2);
+            ps.setString(1, customerId);
+            ps.executeUpdate(); // submits update     
+            
+            // Delete CustomerID second as it's the parent to the AddressDB table
+            String sqlStmt3 = "DELETE FROM customer WHERE customerId = ?";
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt3);
             ps.setString(1, customerId);
             ps.executeUpdate(); // submits update 
                 
             // Since parent key refrence has been deleted, we can now delete the associated addressID from the AddressDB table
-            String sqlStmt3 = "DELETE FROM address WHERE addressId = ?";                 
+            String sqlStmt4 = "DELETE FROM address WHERE addressId = ?";                 
             conn = DBConnection.getConnection();
-            ps = conn.prepareStatement(sqlStmt3);
+            ps = conn.prepareStatement(sqlStmt4);
             ps.setString(1, addressId);
             ps.executeUpdate(); // submits delete 
 
@@ -307,12 +314,12 @@ public class DBQuery {
     }    
    
     
-//--------------------------------------------------------      
-//////////////////// APPOINTMENT / MAIN SCREEN ////////////////////
-//--------------------------------------------------------      
+//--------------------------------------------//     
+//-------- APPOINTMENT / MAIN SCREEN --------//
+//------------------------------------------//    
     
     
-////////// SEARCH FOR CUSTOMER //////////
+//-------- SEARCH FOR CUSTOMER --------//
     
     public static String lookUpCustomer(String customerId, String customerName) {
         try {
@@ -342,7 +349,7 @@ public class DBQuery {
         return ldt;
     }    
     
-////////// GET APPOINTMENT INFO //////////    
+//-------- GET APPOINTMENT INFO --------//    
     
     // Information for Appointment Tableview which displays customerName for each appointment 
     public static ObservableList<Appointment> getAllAppointments() {
@@ -370,8 +377,7 @@ public class DBQuery {
                 LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
                 
 
-                //-------- Time conversion --------//
-                
+                //-- Time conversion --//
                 // START TIME //
                 // Combines dateTime with a time-zone to create a ZonedDateTime . Here it is 'UTC'(ex: 2020-06-10T13:00Z[UTC])
                 ZonedDateTime zdtStartOutput = startUTC.atZone(ZoneId.of("UTC"));
@@ -563,7 +569,7 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
 
     
 
-////////// ADD APPOINTMENT //////////
+//-------- ADD APPOINTMENT --------//
 
     public static String addAppointment(String customerId, String title, String description, String type, String start, String end) {
 
@@ -591,7 +597,7 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
     
 
     
-////////// UPDATE APPOINTMENT //////////
+//-------- UPDATE APPOINTMENT --------//
     
     public static String updateAppointment(String title, String description, String type, String start, String end, String appointmentId) {
 
@@ -617,7 +623,7 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
     }
     
     
-////////// DELETE APPOINTMENT //////////
+//-------- DELETE APPOINTMENT --------//
     public static String deleteAppointment(String appointmentId) {
         try {
             String sqlStmt = "DELETE FROM appointment WHERE appointmentId = ? ";
