@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -29,7 +27,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 import utils.DBQuery;
 
 /**
@@ -68,7 +65,6 @@ public class CustomerController implements Initializable {
    
     Stage stage;
     Parent scene;
-    Customer cus;
     String cusId;
     Address address;
     
@@ -84,10 +80,11 @@ public class CustomerController implements Initializable {
         txtCusId.setDisable(true);        
 
         // Display all Customers in the Tableview        
-        tableViewCustomer.setItems(DBQuery.getAllCustomers());
+        //tableViewCustomer.setItems(DBQuery.getAllCustomers());
+        displayCustomers();
         
         // Set up columns in Customer tableView 
-        colCusId.setCellValueFactory(new PropertyValueFactory<>("customerId")); // customerId is how it is named in the Database
+        colCusId.setCellValueFactory(new PropertyValueFactory<>("customerId")); // customerId is how it is spelled in the Customer Model class
         colName.setCellValueFactory(new PropertyValueFactory<>("customerName"));
         colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
         colAddress2.setCellValueFactory(new PropertyValueFactory<>("address2"));
@@ -98,39 +95,49 @@ public class CustomerController implements Initializable {
                 
         // Display ComboBox Cities
         comboCity.setItems(DBQuery.getAllCities());  
+        //validCustomer();
         
     }    
     
     
-    ////////// ADD NEW CUSTOMER //////////
+    //-------- ADD NEW CUSTOMER --------//
     
     @FXML private void onActionAddCus(ActionEvent event) {
-        //clear() method is used to remove all the elements from a Set not to delete them.
-        DBQuery.customerList.clear();
+
         // User input textfields
         String name = txtName.getText();
         String address = txtAddress.getText();
         String address2 = txtAddress2.getText();
-        // get String value from comboCity selection
-        String coCity = comboCity.getValue().toString(); 
-        // get cityId based on coCity value
-        String cityId = DBQuery.getCityId(coCity); 
+        int checkCoCitySelection = comboCity.getSelectionModel().getSelectedIndex(); // default index value is -1 when no selections are made
         String postalCode = txtPostalCode.getText();
         String phone = txtPhone.getText();
         String addressId = null;
         
-        // pass input textfields to addAddress method        
-        DBQuery.addAddress(address, address2, cityId, postalCode, phone); 
-        // get addressId from last added address
-        addressId = DBQuery.getAddressIdFromLastCustomerAdded();
-        // pass customerName and associated addressId
-        DBQuery.addCustomer(name, addressId); 
+        if(checkForBlankTextfields(name, address, checkCoCitySelection, postalCode, phone) == true){            
+
+            //clear() method is used to remove all the elements from a Set not to delete them.
+            DBQuery.customerList.clear();
+            // get String value from comboCity selection
+            String coCity = comboCity.getValue().toString(); 
+            // get cityId based on coCity value
+            String cityId = DBQuery.getCityId(coCity); 
+            // pass input textfields to addAddress method        
+            DBQuery.addAddress(address, address2, cityId, postalCode, phone); 
+            // get addressId from last added address
+            addressId = DBQuery.getAddressIdFromLastCustomerAdded();
+            // pass customerName and associated addressId
+            DBQuery.addCustomer(name, addressId);
+        }
+               
+ 
         // Populate Customer tableView
-        displayCustomers();
+        displayCustomers();            
+            
+
     }
     
     
-    ////////// UPDATE CUSTOMER //////////
+    //-------- UPDATE CUSTOMER --------//
     
     @FXML private void onActionUpdateCus(ActionEvent event) {
         
@@ -152,12 +159,12 @@ public class CustomerController implements Initializable {
             // Get current customer list
             DBQuery.getAllCustomers();
         }catch(Exception e) {
-          System.out.println("Error editing customer: " + e.getMessage());
+          System.out.println("Error updating customer: " + e.getMessage());
         }      
     }
 
     
-    ////////// DELETE CUSTOMER //////////
+    //-------- DELETE CUSTOMER --------//
     
     @FXML private void onActionDeleteCus(ActionEvent event) {
         // select customer
@@ -176,7 +183,7 @@ public class CustomerController implements Initializable {
     }
 
     
-    ////////// DISPLAY MAINSCREEN //////////
+    //-------- DISPLAY MAINSCREEN --------//
     
     @FXML private void onActionDisplayMain(ActionEvent event) throws IOException {
         DBQuery.customerList.clear();
@@ -188,7 +195,7 @@ public class CustomerController implements Initializable {
     }
     
 
-    ////////// CLEAR TEXTFIELDS //////////
+    //-------- CLEAR TEXTFIELDS --------//
     
     @FXML private void onActionClear(ActionEvent event) {
             txtCusId.setText("");
@@ -201,7 +208,7 @@ public class CustomerController implements Initializable {
     }
 
         
-    ////////// POPULATE TEXTFIELDS ////////// 
+    //-------- POPULATE TEXTFIELDS --------// 
     
     @FXML void onClickDisplaySelectedCustomer(MouseEvent event) {
         // Select a customer in tableview to display details in textfields
@@ -221,12 +228,28 @@ public class CustomerController implements Initializable {
     }
     
     
-    ////////// POPULATE CUSTOMER TABLEVIEW //////////
+    //-------- POPULATE CUSTOMER TABLEVIEW --------//
     
     public void displayCustomers() {        
+        DBQuery.customerList.clear();
         tableViewCustomer.setItems(DBQuery.getAllCustomers());
     }
 
+
+    public Boolean checkForBlankTextfields(String name, String address, int checkCoCity, String postalCode, String phone) {
+        System.out.println("coCity:" + checkCoCity);
+        if(name.isEmpty() || address.isEmpty() ||  checkCoCity < 0 || postalCode.isEmpty() || phone.isEmpty()) {
+  
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Fields");
+            alert.setHeaderText("Please correct the invalid customer field");
+            alert.setContentText("Please correct the invalid customer field");
+            alert.showAndWait();
+            return false;
+        }else{
+            return true;
+        }
+    }
     
-   
+    
 }
