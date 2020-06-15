@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
 
 /**
  *
@@ -55,9 +56,12 @@ public class DBQuery {
 //-------- User login Screen --------//
 //----------------------------------//    
     
+    //-------- Login --------//
     public static boolean checkLogin(String userNameInput, String passwordInput) {
-        String sqlStmt = "SELECT userName, password FROM user WHERE userName = ? && password = ?";  // ? is a placeholder value
+        
+        String sqlStmt = "SELECT userName, password FROM user WHERE userName = ? AND password = ?";  // ? is a placeholder value
         try {
+            conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
             // criteria for the statement
             ps.setString(1, userNameInput); // replaces first ? in SQL statement
@@ -71,15 +75,55 @@ public class DBQuery {
                 user.setPassword(rs.getString("password"));
                 return true;
             }
-            else {
-                return false;
-            }
         } catch (SQLException e) {
             System.out.println(e.getMessage()); 
         }
         return false;
     }
     
+    
+    //-------- 15min Alert --------//
+    public static void user15MinApptReminder(String user) throws SQLException {
+        String sqlStmt1 = "SELECT userId FROM user WHERE userName = ?";
+            ps = conn.prepareStatement(sqlStmt1);
+            ps.setString(1, user); 
+            rs = ps.executeQuery();
+            String userId = null;
+            if (rs.next()) {
+                userId = rs.getString("userId");
+
+            }        
+        
+        String sqlStmt = "SELECT appointmentId, userId, start FROM appointment WHERE userId = ?";
+
+            ps = conn.prepareStatement(sqlStmt);
+            ps.setString(1, userId); 
+            rs = ps.executeQuery();
+            
+            LocalDateTime localUserTime = LocalDateTime.now();
+            
+            while (rs.next()) {
+                
+                LocalDateTime startTimeAppt = rs.getTimestamp("start").toLocalDateTime();
+                
+                ZonedDateTime zdtStartOutput = startTimeAppt.atZone(ZoneId.of("UTC"));
+                ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
+                LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
+
+
+                
+                if(ldtStartOutput.isAfter(localUserTime) && ldtStartOutput.isBefore(localUserTime.plusMinutes(15))){
+                    System.out.println("Alert new appt");
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Upcoming Appointment");
+                    alert.setContentText("You have an appointment coming up within the next 15 minutes.");
+                    alert.showAndWait();
+                }
+              
+            }
+        
+    }
+            
     
 //----------------------------------//      
 //-------- CUSTOMER SCREEN --------//
@@ -523,6 +567,7 @@ public static Boolean checkAppointmentOutsideBusinessHours(LocalTime comboStartS
 
         LocalTime openingTime = LocalTime.of(8, 0); // 08:00 AM
         LocalTime closingTime = LocalTime.of(17, 0); // 17:00 PM
+
         Boolean isApptValid = true;
      
         // Checks if appt is within Business Hours
