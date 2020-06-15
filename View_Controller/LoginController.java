@@ -7,6 +7,7 @@ package View_Controller;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -70,23 +71,25 @@ public class LoginController implements Initializable {
     }    
 
     @FXML
-    private void onActionLogin(ActionEvent event) throws IOException {
+    private void onActionLogin(ActionEvent event) throws IOException, SQLException {
         // ResourceBundle added for error messages.
         rb = ResourceBundle.getBundle("Languages/Language", Locale.getDefault());
         
         String userNameInput = txtUsername.getText();
         String passwordInput = txtPassword.getText();
         
-        //Used to have this code first for the try/if 
-        //boolean login = DBQuery.checkLogin(userNameInput, passwordInput);
-        //if(login)
+
         
         try {
             if(DBQuery.checkLogin(userNameInput, passwordInput)) {
+               DBQuery.user15MinApptReminder(userNameInput);
+               
                 stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
                 scene = FXMLLoader.load(getClass().getResource("/View_Controller/MainScreen.fxml"));
                 stage.setScene(new Scene(scene));
                 stage.show();
+                
+                
         }
         else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -96,6 +99,8 @@ public class LoginController implements Initializable {
         }
         } catch (IOException e) {
             System.out.println(e.getMessage());         
+        } catch (NullPointerException e) {
+            System.out.println(e.getMessage());
         }
     }
 
