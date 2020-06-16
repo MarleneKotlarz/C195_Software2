@@ -27,6 +27,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.collections.FXCollections;
@@ -48,7 +50,7 @@ public class DBQuery {
     public static ObservableList<String> types = FXCollections.observableArrayList();
     public static ObservableList<Appointment> appointmentList = FXCollections.observableArrayList();
     public static DateTimeFormatter localDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
-    public static DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm:ss");
+    public static DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm");
     public static DateTimeFormatter dateDTF = DateTimeFormatter.ofPattern("dd-MM-YYYY");
     
     
@@ -94,7 +96,7 @@ public class DBQuery {
 
             }        
         
-        String sqlStmt = "SELECT appointmentId, userId, start FROM appointment WHERE userId = ?";
+        String sqlStmt = "SELECT customerName, appointmentId, userId, start FROM appointment ap INNER JOIN customer cu ON ap.customerId = cu.customerId WHERE userId = ?";
 
             ps = conn.prepareStatement(sqlStmt);
             ps.setString(1, userId); 
@@ -103,21 +105,23 @@ public class DBQuery {
             LocalDateTime localUserTime = LocalDateTime.now();
             
             while (rs.next()) {
-                
+                String cusName = rs.getString("customerName");
                 LocalDateTime startTimeAppt = rs.getTimestamp("start").toLocalDateTime();
                 
                 ZonedDateTime zdtStartOutput = startTimeAppt.atZone(ZoneId.of("UTC"));
                 ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
                 LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
-
+                String formattedStartTime = ldtStartOutput.format(timeDTF);
 
                 
                 if(ldtStartOutput.isAfter(localUserTime) && ldtStartOutput.isBefore(localUserTime.plusMinutes(15))){
-                    System.out.println("Alert new appt");
+                    ResourceBundle rb = ResourceBundle.getBundle("Languages/Language", Locale.getDefault());
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Upcoming Appointment");
-                    alert.setContentText("You have an appointment coming up within the next 15 minutes.");
+                    alert.setTitle(rb.getString("apptReminderTitle"));
+                    alert.setHeaderText(rb.getString("apptReminderHeader"));
+                    alert.setContentText(rb.getString("apptReminderContent1") + " " +  cusName + rb.getString("apptReminderContent2") + " " + formattedStartTime);
                     alert.showAndWait();
+                    
                 }
               
             }
@@ -682,6 +686,47 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
         return null;
     }    
     
+    
+ //-------------------------------//     
+//-------- RECORD SCREEN --------//
+//------------------------------//       
+    
+    public static ObservableList<Appointment> getNumberOfApptTypesByMonth() {
+  
+        try{
+            String sqlStmt1 = "select MONTH(start) AS Month, count(type) from appointment where type = 'English' group by month(start)";
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt1);
+            rs = ps.executeQuery();
+            
+            String type = null;
+            
+            while(rs.next()) {
+                String month = rs.getString("Month");
+                String typeCount = rs.getString("count(type)");
+                type = "English";
+                appointmentList.add(new Appointment(month, typeCount, type));
+            }
+
+            String sqlStmt2 = "select MONTH(start) AS Month, count(type) from appointment where type = 'German' group by month(start)";
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt2);
+            rs = ps.executeQuery();
+            
+            while(rs.next()) {
+                String month = rs.getString("Month");
+                String typeCount = rs.getString("count(type)");
+                type = "German";
+                appointmentList.add(new Appointment(month, typeCount, type));
+            }            
+            
+             
+            
+        }catch(SQLException e) {
+            System.out.println("numberOfApptTypesByMonth: " + e.getMessage());
+        }
+    return appointmentList;
+    }
     
     
     
