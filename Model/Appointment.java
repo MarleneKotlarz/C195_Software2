@@ -18,9 +18,12 @@ public class Appointment {
     String title;
     String description;
     String type;
+    String typeCount;
     String date;
     String start;
     String end;    
+    
+    
 
     public Appointment() {
     }
@@ -63,6 +66,15 @@ public class Appointment {
         this.start = start;
         this.end = end;
     }
+
+    // Constructor for countType by month
+    public Appointment(String start, String typeCount, String type) {
+        this.start = start;
+        this.typeCount = typeCount;
+        this.type = type;
+    }
+    
+    
     
     
 
