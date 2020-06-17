@@ -8,6 +8,7 @@ package utils;
 import Model.Address;
 import Model.Appointment;
 import Model.Customer;
+import Model.Report;
 import Model.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -49,6 +50,9 @@ public class DBQuery {
     public static ObservableList<Customer> customerList = FXCollections.observableArrayList();
     public static ObservableList<String> types = FXCollections.observableArrayList();
     public static ObservableList<Appointment> appointmentList = FXCollections.observableArrayList();
+    public static ObservableList<Report> appointmentReport = FXCollections.observableArrayList();
+    public static ObservableList<Report> customerReport = FXCollections.observableArrayList();
+    
     public static DateTimeFormatter localDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
     public static DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm");
     public static DateTimeFormatter dateDTF = DateTimeFormatter.ofPattern("dd-MM-YYYY");
@@ -691,44 +695,75 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
 //-------- RECORD SCREEN --------//
 //------------------------------//       
     
-    public static ObservableList<Appointment> getNumberOfApptTypesByMonth() {
+    public static ObservableList<Report> getNumberOfApptTypesByMonth() {
   
         try{
-            String sqlStmt1 = "select MONTH(start) AS Month, count(type) from appointment where type = 'English' group by month(start)";
+            String sqlStmt1 = "select MONTHNAME(start) AS Month, COUNT(*) AS CountType from appointment where type = 'English' GROUP BY Month";
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt1);
             rs = ps.executeQuery();
             
             String type = null;
             
+            
             while(rs.next()) {
                 String month = rs.getString("Month");
-                String typeCount = rs.getString("count(type)");
+                String typeCount = rs.getString("CountType");
                 type = "English";
-                appointmentList.add(new Appointment(month, typeCount, type));
+                
+
+                appointmentReport.add(new Report(month, typeCount, type));
+
+
             }
 
-            String sqlStmt2 = "select MONTH(start) AS Month, count(type) from appointment where type = 'German' group by month(start)";
+            String sqlStmt2 = "select MONTHNAME(start) AS Month, COUNT(*) AS CountType from appointment where type = 'German' group by Month";
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt2);
             rs = ps.executeQuery();
             
             while(rs.next()) {
                 String month = rs.getString("Month");
-                String typeCount = rs.getString("count(type)");
+                String typeCount = rs.getString("CountType");
                 type = "German";
-                appointmentList.add(new Appointment(month, typeCount, type));
+                
+                appointmentReport.add(new Report(month, typeCount, type));
             }            
             
-             
             
         }catch(SQLException e) {
             System.out.println("numberOfApptTypesByMonth: " + e.getMessage());
         }
-    return appointmentList;
+    return appointmentReport;
     }
-    
-    
+
+    public static ObservableList<Report> getNumberOfCustomers() {    
+        
+        try{
+            String sqlStmt1 = "select count(*) AS total from customer";
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt1);
+            rs = ps.executeQuery(); 
+            
+            while(rs.next()) {
+                String count = rs.getString("total");
+                
+                customerReport.add((new Report(count)));
+                
+                System.out.println("count: " + count);
+            }
+            
+            
+        }catch(SQLException e) {
+            System.out.println("numberOfApptTypesByMonth: " + e.getMessage());
+        }
+        
+
+            
+            
+       return customerReport;     
+    }
+
     
 }
     
