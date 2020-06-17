@@ -58,10 +58,8 @@ public class MainScreenController implements Initializable {
     ////////// BUTTONS //////////
     @FXML private Button btAddAppt;
     @FXML private Button btDisplayCus;
-    @FXML private Button btDisplayReports;
     @FXML private Button btLogout;    
     @FXML private Button btUpdateAppt;
-    
     @FXML private Button btResetAppt;
     @FXML private Button btSearchCustomer;
     @FXML private Button btResetCustomer;
@@ -114,8 +112,7 @@ public class MainScreenController implements Initializable {
     String combinedDateTimeEnd;
     Boolean isWeekMonthDatePickerSelected;
     
-
-    
+  
     
     private static ObservableList<String> startTimes = FXCollections.observableArrayList();    
     private static ObservableList<String> endTimes = FXCollections.observableArrayList();
@@ -137,14 +134,13 @@ public class MainScreenController implements Initializable {
         // TODO
 
         // Display all Customers in the tableview 
+        DBQuery.getAllCustomers().clear();
         tableViewCustomer.setItems(DBQuery.getAllCustomers());
         // Set up columns in Customer tableView 
         colCusId.setCellValueFactory(new PropertyValueFactory<>("customerId")); 
         colCusName.setCellValueFactory(new PropertyValueFactory<>("customerName"));
-        
         //Display appointment tableView
         displayAppointments();
-        
         // Set up columns in Appointment tableView
         colApptId.setCellValueFactory(new PropertyValueFactory<>("apptId")); 
         colCustomerName.setCellValueFactory(new PropertyValueFactory<>("cusName")); 
@@ -154,16 +150,12 @@ public class MainScreenController implements Initializable {
         colStart.setCellValueFactory(new PropertyValueFactory<>("start"));
         colEnd.setCellValueFactory(new PropertyValueFactory<>("end"));
         colApptCusId.setCellValueFactory(new PropertyValueFactory<>("cusId"));
-
-        
         // Populate comboType with Appointment Types
-        comboType.setItems(getAllTypes());  // --------------------------- original don't jack this up
+        comboType.setItems(getAllTypes());  
 
-        
-        
         // Set up comboBox ObservableLists startTimes/ endTimes
-        startTimes.addAll("07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00");
-        endTimes.addAll("07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00");
+        startTimes.addAll("07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00");
+        endTimes.addAll("07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00");
         comboStart.setItems(startTimes);
         comboEnd.setItems(endTimes); 
 
@@ -173,7 +165,8 @@ public class MainScreenController implements Initializable {
 
     
     
-    ////////// LOOKUP CUSTOMER //////////
+    //-------- LOOKUP CUSTOMER --------//
+    
     @FXML private void onActionSearchCustomer(ActionEvent event) {
         // Uses .clear method to avoid double entries
         DBQuery.customerList.clear();       
@@ -185,7 +178,8 @@ public class MainScreenController implements Initializable {
     }
     
     
-    ////////// CLEAR CUSTOMER TEXTFIELDS //////////
+    //-------- CLEAR CUSTOMER TEXTFIELDS --------//
+    
     @FXML void onActionResetCustomer(ActionEvent event) {
         DBQuery.customerList.clear();
         txtSearchCustomer.setText("");
@@ -195,7 +189,8 @@ public class MainScreenController implements Initializable {
     }
     
     
-    ////////// SELECT CUSTOMER FOR APPOINTMENT //////////
+    //-------- SELECT CUSTOMER FOR APPOINTMENT --------//
+    
     @FXML void onActionSelectCustomer(ActionEvent event) {
         Customer selectedCustomer = tableViewCustomer.getSelectionModel().getSelectedItem();
         if (selectedCustomer != null) {
@@ -207,37 +202,24 @@ public class MainScreenController implements Initializable {
     }
 
 
-    ////////// ADD APPOINTMENT //////////
+    //-------- ADD APPOINTMENT --------//
+    
     @FXML private void onActionAddAppt(ActionEvent event) {
         
-        //------------ Time conversion ------------//
-        
-        // Get date from datePicker to use it for the localTime assignment
-        LocalDate localDate = datePickerAppt.getValue();
-        
-        
-        // Convert String comboBox to LocalTime type by using parse method and assign it to selected item
-        LocalTime startTimes = LocalTime.parse(comboStart.getSelectionModel().getSelectedItem(), timeDTF);
-        // Assign localDate and localTime to LocalDateTime
-        LocalDateTime startLDT = LocalDateTime.of(localDate, startTimes);
-        // Get local zoneID system default - use ZoneId.of(TimeZone.getDefault().getID()) or systemDefault()
-        ZoneId localZoneId = ZoneId.of(TimeZone.getDefault().getID());
-        // Convert from LocalDateTime to UTC 
-        ZonedDateTime startUTC = startLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC")); // use ZoneId.of("UTC") or (localZoneId)
-        // Convert from UTC to LocalDateTime so it can be inserted into the MYSQL database
-        String startSQLIn = String.valueOf(startUTC.toLocalDateTime());
-        
-        // Convert String comboBox to LocalTime type by using parse method and assign it to selected item
-        LocalTime endTimes = LocalTime.parse(comboEnd.getSelectionModel().getSelectedItem(), timeDTF);
-        // Assign localDate and localTime to LocalDateTime
-        LocalDateTime endLDT = LocalDateTime.of(localDate, endTimes);
-        // Get local zoneID system default - use ZoneId.of(TimeZone.getDefault().getID()) or systemDefault()
-        localZoneId = ZoneId.of(TimeZone.getDefault().getID());
-        // Convert from LocalDateTime to UTC 
-        ZonedDateTime endUTC = endLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
-        // Convert from UTC to LocalDateTime so it can be inserted into the MYSQL database
-        String endSQLIn = String.valueOf(endUTC.toLocalDateTime());
-
+        //-- Time conversion --//
+        LocalDate localDate = datePickerAppt.getValue(); // Get date from datePicker to use it for the localTime assignment
+        // Start Times
+        LocalTime startTimes = LocalTime.parse(comboStart.getSelectionModel().getSelectedItem(), timeDTF); // Convert String comboBox to LocalTime type by using parse method and assign it to selected item
+        LocalDateTime startLDT = LocalDateTime.of(localDate, startTimes); // Assign localDate and localTime to LocalDateTime
+        ZoneId localZoneId = ZoneId.of(TimeZone.getDefault().getID()); // Get local zoneID system default - use ZoneId.of(TimeZone.getDefault().getID()) or systemDefault()
+        ZonedDateTime startUTC = startLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC")); // Convert from LocalDateTime to UTC - use ZoneId.of("UTC") or (localZoneId)
+        String startSQLIn = String.valueOf(startUTC.toLocalDateTime()); // Convert from UTC to LocalDateTime so it can be inserted into the MYSQL database
+        // End Times
+        LocalTime endTimes = LocalTime.parse(comboEnd.getSelectionModel().getSelectedItem(), timeDTF); // Convert String comboBox to LocalTime type by using parse method and assign it to selected item
+        LocalDateTime endLDT = LocalDateTime.of(localDate, endTimes); // Assign localDate and localTime to LocalDateTime
+        localZoneId = ZoneId.of(TimeZone.getDefault().getID()); // Get local zoneID system default - use ZoneId.of(TimeZone.getDefault().getID()) or systemDefault()
+        ZonedDateTime endUTC = endLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC")); // Convert from LocalDateTime to UTC
+        String endSQLIn = String.valueOf(endUTC.toLocalDateTime()); // Convert from UTC to LocalDateTime so it can be inserted into the MYSQL database
 
         // Appointment textfields - User Input will be displayed in the appointment tableView
         String customerId = txtCusId.getText();
@@ -245,10 +227,7 @@ public class MainScreenController implements Initializable {
         String description = txtDescription.getText();
         String coType = comboType.getSelectionModel().getSelectedItem().toString();
         
-        
-        //----------------------- Workn on it starts
-        // Valid Bussiness Hours
-
+        // Add appointment if it is within BussinessHours and does not overlap with existing appointment
         if(DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn) && DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes) == true) {
             // Calls addAppointment method and passes in the required parameters
             DBQuery.addAppointment(customerId, title, description, coType, startSQLIn, endSQLIn);  
@@ -259,22 +238,14 @@ public class MainScreenController implements Initializable {
             alert.showAndWait();
         }
         
-//        DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn);
-//        DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes);
-
-        
-        //----------------------- Workn on it ends
-        
-
-        
-        
         // Display appointment tableview
         displayAppointments();
 
     }
     
    
-    ////////// UPDATE APPOINTMENT //////////
+    //-------- UPDATE APPOINTMENT --------//
+    
     @FXML private void onActionUpdateAppt(ActionEvent event) {
         
         try {
@@ -284,42 +255,22 @@ public class MainScreenController implements Initializable {
             String title = txtTitle.getText();
             String description = txtDescription.getText();
             String coType = comboType.getSelectionModel().getSelectedItem().toString();
-  //          String coStart = comboStart.getValue().toString();
-//            String coEnd = comboEnd.getValue().toString();
             String appointmentId = txtApptID.getText();
-            
 
-            
-        LocalDate localDate = datePickerAppt.getValue();
-        
-        // Convert String comboBox to LocalTime type by using parse method and assign it to selected item
-        LocalTime startTimes = LocalTime.parse(comboStart.getSelectionModel().getSelectedItem(), timeDTF);
-        // Assign localDate and localTime to LocalDateTime
-        LocalDateTime startLDT = LocalDateTime.of(localDate, startTimes);
-        // Get local zoneID system default - use ZoneId.of(TimeZone.getDefault().getID()) or systemDefault()
-        ZoneId localZoneId = ZoneId.of(TimeZone.getDefault().getID());
-        // Convert from LocalDateTime to UTC 
-        ZonedDateTime startUTC = startLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC")); // use ZoneId.of("UTC") or (localZoneId)
-        // Convert from UTC to LocalDateTime so it can be inserted into the MYSQL database
-        String startSQLIn = String.valueOf(startUTC.toLocalDateTime());
-
-
-//========================code above is good=========
-        // Convert String comboBox to LocalTime type by using parse method and assign it to selected item
-        LocalTime endTimes = LocalTime.parse(comboEnd.getSelectionModel().getSelectedItem(), timeDTF);
-        // Assign localDate and localTime to LocalDateTime
-        LocalDateTime endLDT = LocalDateTime.of(localDate, endTimes);
-
-        // Get local zoneID system default - use ZoneId.of(TimeZone.getDefault().getID()) or systemDefault()
-                localZoneId = ZoneId.of(TimeZone.getDefault().getID());
-                
-        // Convert from LocalDateTime to UTC 
-        ZonedDateTime endUTC = endLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
-   
-        // Convert from UTC to LocalDateTime so it can be inserted into the MYSQL database
-        String endSQLIn = String.valueOf(endUTC.toLocalDateTime());
-//========================code above is good=========            
-
+            //-- Time Conversion --//
+            LocalDate localDate = datePickerAppt.getValue();
+            // Start Times        
+            LocalTime startTimes = LocalTime.parse(comboStart.getSelectionModel().getSelectedItem(), timeDTF); 
+            LocalDateTime startLDT = LocalDateTime.of(localDate, startTimes); 
+            ZoneId localZoneId = ZoneId.of(TimeZone.getDefault().getID()); 
+            ZonedDateTime startUTC = startLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
+            String startSQLIn = String.valueOf(startUTC.toLocalDateTime()); 
+            // End Times
+            LocalTime endTimes = LocalTime.parse(comboEnd.getSelectionModel().getSelectedItem(), timeDTF);
+            LocalDateTime endLDT = LocalDateTime.of(localDate, endTimes);
+            localZoneId = ZoneId.of(TimeZone.getDefault().getID());            
+            ZonedDateTime endUTC = endLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
+            String endSQLIn = String.valueOf(endUTC.toLocalDateTime());
 
 
             // Calls updateAppointment method and passes in required arguments
@@ -334,7 +285,8 @@ public class MainScreenController implements Initializable {
     }
     
     
-    ////////// DELETE APPOINTMENT //////////
+    //-------- DELETE APPOINTMENT --------//
+    
     @FXML private void onActionDeleteAppt(ActionEvent event) {
         
         // Selected appointment
@@ -353,16 +305,17 @@ public class MainScreenController implements Initializable {
     }
     
 
-    ////////// POPULATE APPOINTMENT TABLEVIEW //////////
+    //-------- POPULATE APPOINTMENT TABLEVIEW --------//
+    
     public void displayAppointments() {
-        // Clears the ObservableList appointmentList 
-        // Needed so that if a button is pressed the data doesn't show up twice again
+        // Clears the ObservableList appointmentList - needed so that if a button is pressed the data doesn't show up twice again
         DBQuery.appointmentList.clear();
         // Sets tableView with getAllAppointments method to show all records
         tableViewAppt.setItems(DBQuery.getAllAppointments());
     }
     
-    ////////// POPULATE TEXTFIELDS TO UPDATE APPOINTMENT //////////
+    //-------- POPULATE TEXTFIELDS TO UPDATE APPOINTMENT --------//
+    
     @FXML void onClickSetAppointment(MouseEvent event) {
         
         // Get selected appointment record
@@ -379,21 +332,19 @@ public class MainScreenController implements Initializable {
             comboType.setValue(displayAppt.getType());
  
             //------------ Populate DatePicker & ComboBoxes ------------//
-            // Gets the startDate from the tableView, splits it in half and assigns variables to each piece
             // You have to make sure that the formatter includes the patterns that are being passed in
-            // e.g. if you have DateTime you need the formatter to show the code there is a gap between date and time
-               
-            // Time conversion start/end comboboxes
+            
+            //-- Time conversion --//
+            // Start Times
             String startDateTime = displayAppt.getStart();
             LocalDateTime startLDT = LocalDateTime.parse(startDateTime, localDTF);
             LocalTime startLT = startLDT.toLocalTime();
             String start = startLT.format(timeDTF);
-                
+            // End Times
             String endDateTime = displayAppt.getEnd();
             LocalDateTime endLDT = LocalDateTime.parse(endDateTime, localDTF);
             LocalTime endLT = endLDT.toLocalTime();
             String end = endLT.format(timeDTF);
-                
             // Time conversion DatePicker
             LocalDateTime dateLDT = LocalDateTime.parse(startDateTime, localDTF);
             LocalDate populateDatePicker = dateLDT.toLocalDate();
@@ -410,10 +361,11 @@ public class MainScreenController implements Initializable {
     }    
         
     
-    ////////// APPOINTMENT TYPES //////////
+    //-------- APPOINTMENT TYPES --------//
+    
     public static ObservableList <String> getAllTypes() {
         types.removeAll(types);
-        types.addAll("English", "German", "Spanish", "French", "Chinese", "Russian", "Indian");
+        types.addAll("English", "German");
         return types;
     }  
 
@@ -432,13 +384,9 @@ public class MainScreenController implements Initializable {
         } 
         else {
             DBQuery.appointmentList.clear(); // must clear the tableview before filling it again
-
             LocalDate date = datePickerView.getValue();
             String monthDatepicker = date.format(monthDTF);
-         
-            
-            System.out.println("datepickerSelection:" + monthDatepicker);
-            
+            // call method to get appointments by month filter
             tableViewAppt.setItems(DBQuery.getAllAppointmentsByMonth(monthDatepicker)); 
 
         }
@@ -459,8 +407,7 @@ public class MainScreenController implements Initializable {
             WeekFields weekFields = WeekFields.of(Locale.getDefault());
             int weekNumber = date.get(weekFields.weekOfWeekBasedYear());
             String weekDate = Integer.toString(weekNumber-1);
-            
-            //tableViewAppt.setItems(DBQuery.getAllAppointmentsByWeek("23")); // replace 23 with the week number of the selected week this must be one minus the current week so if it's the 24th week of the year the number is 23
+            // call method to get appointments by week filter
             tableViewAppt.setItems(DBQuery.getAllAppointmentsByWeek(weekDate));  
         }
     }
@@ -477,7 +424,8 @@ public class MainScreenController implements Initializable {
     }
     
     
-    ////////// CLEAR APPOINTMENTS TEXTFIELDS //////////
+    //-------- CLEAR APPOINTMENTS TEXTFIELDS --------//
+    
     @FXML void onActionResetAppt(ActionEvent event) {
         DBQuery.appointmentList.clear();
         txtCusId.setText("");
@@ -493,7 +441,8 @@ public class MainScreenController implements Initializable {
         tableViewAppt.setItems(DBQuery.getAllAppointments());    
     }
     
-    ////////// DISPLAY CUSTOMER SCREEN //////////
+    //-------- DISPLAY CUSTOMER SCREEN --------//
+    
     @FXML private void onActionDisplayCus(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Customer.fxml"));
@@ -501,12 +450,25 @@ public class MainScreenController implements Initializable {
         stage.show();        
     }
         
-    ////////// DISPLAY REPORTS SCREEN //////////
-    @FXML private void onActionDisplayReports(ActionEvent event) throws IOException {
+    //-------- DISPLAY REPORTS SCREEN --------//
+    
+    @FXML void onActionDisplayApptTypesByMonth(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
-        scene = FXMLLoader.load(getClass().getResource("/View_Controller/Reports.fxml"));
+        scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_ApptTypesByMonth.fxml"));
         stage.setScene(new Scene(scene));
-        stage.show();        
+        stage.show();  
+    }
+
+    @FXML void onActionDisplayNumberOfCustomers(ActionEvent event) throws IOException {
+        stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
+        scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_CustomerCount.fxml"));
+        stage.setScene(new Scene(scene));
+        stage.show(); 
+    }
+
+
+    @FXML void onActionDisplayConsultantSchedule(ActionEvent event) {
+
     }
 
     
@@ -534,9 +496,6 @@ public class MainScreenController implements Initializable {
     @FXML void onActionComboEnd(ActionEvent event) {
     }
            
-    
-    @FXML private void onActionSearchAppt(ActionEvent event) {
-    }
     
     
     
