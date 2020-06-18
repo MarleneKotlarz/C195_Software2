@@ -13,9 +13,10 @@ public class Report {
     String month; 
     String typeCount; 
     String type;
-    String customerId;
-    String customerName;
-    String count;
+ 
+    String apptCount;
+    String apptTime;
+
 
     
     // Constructor for appt type count
@@ -25,12 +26,11 @@ public class Report {
         this.type = type;
     }
 
-    public Report(String count) {
-        this.count = count;
+    // Constructor for appt time count
+    public Report(String count, String time) {
+        this.apptCount = count;
+        this.apptTime = time;
     }
-    
-    
-    
     
     
     // Getter and Setter
@@ -59,31 +59,23 @@ public class Report {
         this.type = type;
     }
 
-    public String getCustomerId() {
-        return customerId;
+    public String getApptCount() {
+        return apptCount;
     }
 
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
+    public void setApptCount(String apptCount) {
+        this.apptCount = apptCount;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public String getApptTime() {
+        return apptTime;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-    public String getCount() {
-        return count;
-    }
-
-    public void setCount(String count) {
-        this.count = count;
+    public void setApptTime(String apptTime) {
+        this.apptTime = apptTime;
     }
     
-    
+
     
     
 }
