@@ -51,7 +51,7 @@ public class DBQuery {
     public static ObservableList<String> types = FXCollections.observableArrayList();
     public static ObservableList<Appointment> appointmentList = FXCollections.observableArrayList();
     public static ObservableList<Report> appointmentReport = FXCollections.observableArrayList();
-    public static ObservableList<Report> customerReport = FXCollections.observableArrayList();
+    public static ObservableList<Report> appointmentsByMorningAfternoon = FXCollections.observableArrayList();
     
     public static DateTimeFormatter localDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
     public static DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm");
@@ -737,33 +737,82 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
     return appointmentReport;
     }
 
-    public static ObservableList<Report> getNumberOfCustomers() {    
+//    public static ObservableList<Report> getNumberOfCustomers() {    
+//        
+//        try{
+//            String sqlStmt1 = "select count(*) AS total from customer";
+//            conn = DBConnection.getConnection();
+//            ps = conn.prepareStatement(sqlStmt1);
+//            rs = ps.executeQuery(); 
+//            
+//            while(rs.next()) {
+//                String count = rs.getString("total");
+//                
+//                customerReport.add((new Report(count)));
+//                
+//                System.out.println("count: " + count);
+//            }
+//            
+//            
+//        }catch(SQLException e) {
+//            System.out.println("numberOfApptTypesByMonth: " + e.getMessage());
+//        }
+//
+//            
+//       return customerReport;     
+//    }
+    
+    
+
+    public static ObservableList<Report> reportApptFilteredByTime() {
+
+        String sqlStmt = "select appointmentId, start FROM appointment";
         
-        try{
-            String sqlStmt1 = "select count(*) AS total from customer";
+        
+        LocalTime morningStart = LocalTime.of(8, 0); 
+        LocalTime morningEnd = LocalTime.of(11, 59);
+        LocalTime afternoonStart = LocalTime.of(11, 59); 
+        LocalTime afternoonEnd = LocalTime.of(17, 0);
+        
+        ArrayList<String> morning = new ArrayList<>(); // creating an ArrayList to store morning appointmentIDs in
+        ArrayList<String> afternoon = new ArrayList<>(); // creating an ArrayList to store afternoon appointmentIDs in
+
+        try {
             conn = DBConnection.getConnection();
-            ps = conn.prepareStatement(sqlStmt1);
-            rs = ps.executeQuery(); 
-            
+            ps = conn.prepareStatement(sqlStmt);
+            rs = ps.executeQuery(); // submits entire SQL statement
+
             while(rs.next()) {
-                String count = rs.getString("total");
-                
-                customerReport.add((new Report(count)));
-                
-                System.out.println("count: " + count);
+                String apptId = rs.getString("appointmentId");
+                LocalDateTime dbStartUTC = rs.getTimestamp("start").toLocalDateTime();
+
+                ZonedDateTime zdtStartOutput = dbStartUTC.atZone(ZoneId.of("UTC"));
+                ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
+                LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
+                LocalTime apptStart = ldtStartOutput.toLocalTime();
+                String start = apptStart.format(timeDTF);
+
+         
+                // Checks if the appointment is within the morning or afternoon timeframe
+             if(apptStart.isAfter(morningStart) && apptStart.isBefore(morningEnd))
+                 morning.add(apptId);
+             else if(apptStart.isAfter(afternoonStart) && apptStart.isBefore(afternoonEnd))
+                   afternoon.add(apptId);
             }
+
+            String morningCount = String.valueOf(morning.size());
+            String afternoonCount = String.valueOf(afternoon.size());    
+          
+            appointmentsByMorningAfternoon.add(new Report(morningCount, "Morning"));
+            appointmentsByMorningAfternoon.add(new Report(afternoonCount, "Afternoon"));
             
-            
-        }catch(SQLException e) {
-            System.out.println("numberOfApptTypesByMonth: " + e.getMessage());
+        } catch (SQLException e) {
+            System.out.println(e.getMessage()); 
+
         }
-        
-
-            
-            
-       return customerReport;     
+// Now return the appointmentsByMorningAfternoon and set it to the tableview
+        return appointmentsByMorningAfternoon;
     }
-
     
 }
     
