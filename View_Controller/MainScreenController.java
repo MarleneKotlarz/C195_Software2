@@ -459,9 +459,9 @@ public class MainScreenController implements Initializable {
         stage.show();  
     }
 
-    @FXML void onActionDisplayNumberOfCustomers(ActionEvent event) throws IOException {
+    @FXML void onActionDisplayApptFilteredByTime(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
-        scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_CustomerCount.fxml"));
+        scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_ApptFilteredByTime.fxml"));
         stage.setScene(new Scene(scene));
         stage.show(); 
     }
