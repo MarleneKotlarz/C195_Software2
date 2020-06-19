@@ -51,7 +51,10 @@ public class LoginController implements Initializable {
     Stage stage;
     Parent scene;
     ResourceBundle rb;
-
+    public static String userNameInput = null;    
+    public static String getCurrentUser = null;
+    String passwordInput = null;
+    
     /**
      * Initializes the controller class.
      */
@@ -67,7 +70,6 @@ public class LoginController implements Initializable {
             labelPassword.setText(rb.getString("password"));
             btLogin.setText(rb.getString("buttonLogin"));
             btExit.setText(rb.getString("buttonExit")); 
-
     }    
 
     @FXML
@@ -75,21 +77,19 @@ public class LoginController implements Initializable {
         // ResourceBundle added for error messages.
         rb = ResourceBundle.getBundle("Languages/Language", Locale.getDefault());
         
-        String userNameInput = txtUsername.getText();
-        String passwordInput = txtPassword.getText();
-        
+        userNameInput = txtUsername.getText();
+        passwordInput = txtPassword.getText();
 
-        
         try {
             if(DBQuery.checkLogin(userNameInput, passwordInput)) {
+                
                DBQuery.user15MinApptReminder(userNameInput);
+               getCurrentUser();
                
-                stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
-                scene = FXMLLoader.load(getClass().getResource("/View_Controller/MainScreen.fxml"));
-                stage.setScene(new Scene(scene));
-                stage.show();
-                
-                
+               stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
+               scene = FXMLLoader.load(getClass().getResource("/View_Controller/MainScreen.fxml"));
+               stage.setScene(new Scene(scene));
+               stage.show();                               
         }
         else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -97,13 +97,17 @@ public class LoginController implements Initializable {
             alert.setContentText(rb.getString("errorText"));
             alert.showAndWait();            
         }
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             System.out.println(e.getMessage());         
-        } catch (NullPointerException e) {
-            System.out.println(e.getMessage());
         }
     }
 
+    public static String getCurrentUser() {   
+        getCurrentUser = userNameInput;     
+    return getCurrentUser;
+    }
+    
+    
     @FXML
     private void onActionExit(ActionEvent event) {
         
