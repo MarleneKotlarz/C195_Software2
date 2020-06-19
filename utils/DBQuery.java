@@ -5,7 +5,7 @@
  */
 package utils;
 
-import Model.Address;
+
 import Model.Appointment;
 import Model.Customer;
 import Model.Report;
@@ -14,27 +14,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Month;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
+import View_Controller.LoginController;
 
 /**
  *
@@ -97,7 +88,6 @@ public class DBQuery {
             String userId = null;
             if (rs.next()) {
                 userId = rs.getString("userId");
-
             }        
         
         String sqlStmt = "SELECT customerName, appointmentId, userId, start FROM appointment ap INNER JOIN customer cu ON ap.customerId = cu.customerId WHERE userId = ?";
@@ -116,7 +106,6 @@ public class DBQuery {
                 ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
                 LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
                 String formattedStartTime = ldtStartOutput.format(timeDTF);
-
                 
                 if(ldtStartOutput.isAfter(localUserTime) && ldtStartOutput.isBefore(localUserTime.plusMinutes(15))){
                     ResourceBundle rb = ResourceBundle.getBundle("Languages/Language", Locale.getDefault());
@@ -124,12 +113,9 @@ public class DBQuery {
                     alert.setTitle(rb.getString("apptReminderTitle"));
                     alert.setHeaderText(rb.getString("apptReminderHeader"));
                     alert.setContentText(rb.getString("apptReminderContent1") + " " +  cusName + rb.getString("apptReminderContent2") + " " + formattedStartTime);
-                    alert.showAndWait();
-                    
-                }
-              
-            }
-        
+                    alert.showAndWait();                    
+                }              
+            }        
     }
             
     
@@ -229,8 +215,7 @@ public class DBQuery {
                 String phone = rs.getString("phone");
                 // add variables to the customerList                
                 customerList.add(new Customer(id, name, add, add2, city, zip, country, phone));
-
-                }
+            }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -242,8 +227,8 @@ public class DBQuery {
 //-------- ADD ADDRESS --------//
 
     public static String addAddress(String address, String address2, String cityId, String postalCode, String phone) { // passing in addressDB table input fields
-        String sqlStmt = "INSERT INTO address (address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, ?, ?, ?, now(), 'test', now(), 'test')";
-        
+        String sqlStmt = "INSERT INTO address (address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, ?, ?, ?, now(), ?, now(), ?)";
+               
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
@@ -252,9 +237,9 @@ public class DBQuery {
             ps.setString(3, cityId);
             ps.setString(4, postalCode); 
             ps.setString(5, phone); 
-  
+            ps.setString(6, LoginController.getCurrentUser);
+            ps.setString(7, LoginController.getCurrentUser);
             ps.execute(); // submits entire SQL statement
-
         } catch (SQLException e) {
             System.out.println(e.getMessage()); 
         }
@@ -264,13 +249,15 @@ public class DBQuery {
 //-------- ADD CUSTOMER --------//
     
     public static String addCustomer(String customerName, String addressId) { // passing in customerDB table input fields
-        String sqlStmt = "INSERT INTO customer (customerName, addressId, active, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, '1', now(), 'test', now(), 'test')";
+        String sqlStmt = "INSERT INTO customer (customerName, addressId, active, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, '1', now(), ?, now(), ?)";
         
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
             ps.setString(1, customerName); // replaces first ? in SQL statement
-            ps.setString(2, addressId);             
+            ps.setString(2, addressId); 
+            ps.setString(3, LoginController.getCurrentUser);
+            ps.setString(4, LoginController.getCurrentUser);            
             ps.execute(); // submits entire SQL statement
         } catch (SQLException e) {
             System.out.println(e.getMessage()); 
@@ -291,7 +278,6 @@ public class DBQuery {
             ps.setString(2, customerId); 
             ps.execute();  
 
-
             String sqlStmt2 = "SELECT addressId FROM customer WHERE customerId = ?";
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt2);
@@ -300,8 +286,7 @@ public class DBQuery {
             String addressId = null;
                 while(rs.next()) {
                     addressId = rs.getString(1);
-                }      
-                
+                }                      
 
             String sqlStmt3 = "UPDATE address SET address = ?, address2 = ?, cityId = ?, postalCode = ?, phone = ? WHERE addressId = ?";
             conn = DBConnection.getConnection();
@@ -358,7 +343,7 @@ public class DBQuery {
             ps = conn.prepareStatement(sqlStmt4);
             ps.setString(1, addressId);
             ps.executeUpdate(); // submits delete 
-
+            
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -375,8 +360,7 @@ public class DBQuery {
     
     public static String lookUpCustomer(String customerId, String customerName) {
         try {
-            String sqlStmt = "SELECT customerId, customerName FROM customer WHERE customerId = ? || customerName = ?";
-            
+            String sqlStmt = "SELECT customerId, customerName FROM customer WHERE customerId = ? || customerName = ?";            
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
             ps.setString(1, customerId);
@@ -392,14 +376,8 @@ public class DBQuery {
         }
         return null;
     }
+
     
-    
-    //Converts user's localdatetime to UTC 
-    public static LocalDateTime stringToLDT_UTC(String time, String date) {
-        LocalDateTime ldt =  LocalDateTime.parse(date + " " + time, localDTF).atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
-        String replace = ldt.toString().replace("T", " ");
-        return ldt;
-    }    
     
 //-------- GET APPOINTMENT INFO --------//    
     
@@ -415,7 +393,6 @@ public class DBQuery {
             ps = conn.prepareStatement(sqlStmt);
             rs = ps.executeQuery(); // submits entire SQL statement
 
-
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
                 String cusId = rs.getString("customerId");
@@ -428,7 +405,6 @@ public class DBQuery {
                 LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
                 LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
                 
-
                 //-- Time conversion --//
                 // START TIME //
                 // Combines dateTime with a time-zone to create a ZonedDateTime . Here it is 'UTC'(ex: 2020-06-10T13:00Z[UTC])
@@ -445,11 +421,9 @@ public class DBQuery {
                 ZonedDateTime zdtEndOutToLocalTimeZone = zdtEndOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
                 LocalDateTime ldtEndOutput = zdtEndOutToLocalTimeZone.toLocalDateTime();
                 String formattedEndTime = ldtEndOutput.format(localDTF);
-
                 
                 // Assign parameters to .add method
                 appointmentList.add(new Appointment(apptId, cusId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
-
             }            
         } catch (SQLException e) {
             e.printStackTrace();
@@ -471,7 +445,6 @@ public class DBQuery {
             ps = conn.prepareStatement(sqlStmt);
             ps.setString(1, datepickerSelection);
             rs = ps.executeQuery(); // submits entire SQL statement
-
             
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
@@ -481,8 +454,7 @@ public class DBQuery {
                 String type = rs.getString("type");                            
                 //Convert timestamp appointment table "start" & "end" column time from UTC to LocalDateTime that the user selected
                 LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
-                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
-                
+                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();                
 
                 //-------- Time conversion --------//
                 
@@ -499,19 +471,18 @@ public class DBQuery {
                 // END TIME //                
                 ZonedDateTime zdtEndOutput = endUTC.atZone(ZoneId.of("UTC"));
                 ZonedDateTime zdtEndOutToLocalTimeZone = zdtEndOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
-                LocalDateTime ldtEndOutput = zdtEndOutToLocalTimeZone.toLocalDateTime();
-                
+                LocalDateTime ldtEndOutput = zdtEndOutToLocalTimeZone.toLocalDateTime();                
                 String formattedEndTime = ldtEndOutput.format(localDTF);
                 
                 // Assign parameters to .add method
                 appointmentList.add(new Appointment(apptId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
-
             }            
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return appointmentList;          
     } 
+    
     
         // Information for Appointment Tableview which displays customerName for each appointment 
     public static ObservableList<Appointment> getAllAppointmentsByWeek(String datepickerSelection) {
@@ -521,13 +492,11 @@ public class DBQuery {
         "WHERE week(start) = ? \n" + // Insert the datepickerSelection into this variable minus -1 (so if it's the 24th week of the year, subtract 1 from that number)
         "ORDER BY appointmentId";
         
-        // you need to include the "datepickerSelection" in your SQL statement
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
             ps.setString(1, datepickerSelection);            
             rs = ps.executeQuery(); // submits entire SQL statement
-
 
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
@@ -541,8 +510,7 @@ public class DBQuery {
                 LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
                 
 
-                //-------- Time conversion --------//
-                
+                //-------- Time conversion --------//                
                 // START TIME //
                 // Combines dateTime with a time-zone to create a ZonedDateTime . Here it is 'UTC'(ex: 2020-06-10T13:00Z[UTC])
                 ZonedDateTime zdtStartOutput = startUTC.atZone(ZoneId.of("UTC"));
@@ -558,11 +526,9 @@ public class DBQuery {
                 ZonedDateTime zdtEndOutToLocalTimeZone = zdtEndOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
                 LocalDateTime ldtEndOutput = zdtEndOutToLocalTimeZone.toLocalDateTime();
                 String formattedEndTime = ldtEndOutput.format(localDTF);
-
                 
                 // Assign parameters to .add method
                 appointmentList.add(new Appointment(apptId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
-
             }            
         } catch (SQLException e) {
             e.printStackTrace();
@@ -575,14 +541,10 @@ public static Boolean checkAppointmentOutsideBusinessHours(LocalTime comboStartS
 
         LocalTime openingTime = LocalTime.of(8, 0); // 08:00 AM
         LocalTime closingTime = LocalTime.of(17, 0); // 17:00 PM
-
-        Boolean isApptValid = true;
-     
+        Boolean isApptValid = true;     
         // Checks if appt is within Business Hours
         if(comboStartSelection.isBefore(openingTime) || comboEndSelection.isAfter(closingTime))
-            isApptValid = false;
-           
-        
+            isApptValid = false;                   
         return isApptValid;    
     } 
     
@@ -597,11 +559,9 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             ps = conn.prepareStatement(sqlStmt);
             rs = ps.executeQuery(); // submits entire SQL statement
 
-
             while(rs.next()) {
                 LocalDateTime dbStartUTC = rs.getTimestamp("start").toLocalDateTime();
-                LocalDateTime dbEndUTC = rs.getTimestamp("end").toLocalDateTime();  
-                
+                LocalDateTime dbEndUTC = rs.getTimestamp("end").toLocalDateTime();                  
                 LocalDateTime comboStart = LocalDateTime.parse(comboStartSelection);
                 LocalDateTime comboEnd = LocalDateTime.parse(comboEndSelection);
                 
@@ -610,27 +570,23 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
                 if(comboStart.isAfter(dbStartUTC) && comboEnd.isBefore(dbEndUTC) || 
                      comboEnd.isAfter(dbStartUTC) && comboEnd.isBefore(dbEndUTC) )
                     isApptValid = false;
-           }
-   
-            
+            }             
         } catch (SQLException e) {
             System.out.println(e.getMessage()); 
         }
         return isApptValid;    
     }
-    
 
-    
+
 
 //-------- ADD APPOINTMENT --------//
 
     public static String addAppointment(String customerId, String title, String description, String type, String start, String end) {
 
         String sqlStmt = "INSERT INTO appointment (customerId, userId, title, description, location, contact, type, url, start, end, createDate, createdBy, lastUpdate, lastUpdateBy) \n" + 
-            "VALUES (?, '1', ?, ?, 'location-sample-text', 'contact-sample-text', ?, 'url-sample-text', ?, ?, now(), 'test', now(), 'test')";    
+            "VALUES (?, '1', ?, ?, 'location-sample-text', 'contact-sample-text', ?, 'url-sample-text', ?, ?, now(), ?, now(), ?)";    
 
-        try {
-            
+        try {            
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
             ps.setString(1, customerId); // replaces first ? placeholder in SQL statement
@@ -639,7 +595,8 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             ps.setString(4, type);
             ps.setString(5, start);
             ps.setString(6, end);
-
+            ps.setString(7, LoginController.getCurrentUser);            
+            ps.setString(8, LoginController.getCurrentUser);
             ps.execute(); // submits entire SQL statement
             
         } catch (SQLException e) {
@@ -665,13 +622,11 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             ps.setString(4, start);
             ps.setString(5, end);
             ps.setString(6, appointmentId);
-            ps.execute();
-            
-            
-      
+            ps.execute();          
+                  
         }catch(SQLException e) {
             System.out.println("Update Appointment SQL ERROR:" + e.getMessage());
-    }
+        }
     return null;
     }
     
@@ -701,20 +656,14 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             String sqlStmt1 = "select MONTHNAME(start) AS Month, COUNT(*) AS CountType from appointment where type = 'English' GROUP BY Month";
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt1);
-            rs = ps.executeQuery();
-            
-            String type = null;
-            
+            rs = ps.executeQuery();            
+            String type = null;            
             
             while(rs.next()) {
                 String month = rs.getString("Month");
                 String typeCount = rs.getString("CountType");
-                type = "English";
-                
-
+                type = "English";               
                 appointmentReport.add(new Report(month, typeCount, type));
-
-
             }
 
             String sqlStmt2 = "select MONTHNAME(start) AS Month, COUNT(*) AS CountType from appointment where type = 'German' group by Month";
@@ -725,50 +674,20 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             while(rs.next()) {
                 String month = rs.getString("Month");
                 String typeCount = rs.getString("CountType");
-                type = "German";
-                
+                type = "German";                
                 appointmentReport.add(new Report(month, typeCount, type));
-            }            
-            
+            }                        
             
         }catch(SQLException e) {
             System.out.println("numberOfApptTypesByMonth: " + e.getMessage());
         }
     return appointmentReport;
     }
-
-//    public static ObservableList<Report> getNumberOfCustomers() {    
-//        
-//        try{
-//            String sqlStmt1 = "select count(*) AS total from customer";
-//            conn = DBConnection.getConnection();
-//            ps = conn.prepareStatement(sqlStmt1);
-//            rs = ps.executeQuery(); 
-//            
-//            while(rs.next()) {
-//                String count = rs.getString("total");
-//                
-//                customerReport.add((new Report(count)));
-//                
-//                System.out.println("count: " + count);
-//            }
-//            
-//            
-//        }catch(SQLException e) {
-//            System.out.println("numberOfApptTypesByMonth: " + e.getMessage());
-//        }
-//
-//            
-//       return customerReport;     
-//    }
-    
     
 
     public static ObservableList<Report> reportApptFilteredByTime() {
 
-        String sqlStmt = "select appointmentId, start FROM appointment";
-        
-        
+        String sqlStmt = "select appointmentId, start FROM appointment";       
         LocalTime morningStart = LocalTime.of(8, 0); 
         LocalTime morningEnd = LocalTime.of(11, 59);
         LocalTime afternoonStart = LocalTime.of(11, 59); 
@@ -785,13 +704,11 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
                 LocalDateTime dbStartUTC = rs.getTimestamp("start").toLocalDateTime();
-
                 ZonedDateTime zdtStartOutput = dbStartUTC.atZone(ZoneId.of("UTC"));
                 ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
                 LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
                 LocalTime apptStart = ldtStartOutput.toLocalTime();
                 String start = apptStart.format(timeDTF);
-
          
                 // Checks if the appointment is within the morning or afternoon timeframe
              if(apptStart.isAfter(morningStart) && apptStart.isBefore(morningEnd))
@@ -799,10 +716,9 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
              else if(apptStart.isAfter(afternoonStart) && apptStart.isBefore(afternoonEnd))
                    afternoon.add(apptId);
             }
-
+            
             String morningCount = String.valueOf(morning.size());
-            String afternoonCount = String.valueOf(afternoon.size());    
-          
+            String afternoonCount = String.valueOf(afternoon.size());              
             appointmentsByMorningAfternoon.add(new Report(morningCount, "Morning"));
             appointmentsByMorningAfternoon.add(new Report(afternoonCount, "Afternoon"));
             
@@ -810,8 +726,8 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             System.out.println(e.getMessage()); 
 
         }
-// Now return the appointmentsByMorningAfternoon and set it to the tableview
-        return appointmentsByMorningAfternoon;
+    //  Return the appointmentsByMorningAfternoon and set it to the tableview
+    return appointmentsByMorningAfternoon;
     }
     
 }
