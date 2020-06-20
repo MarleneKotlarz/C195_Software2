@@ -5,13 +5,10 @@
  */
 package View_Controller;
 
-import Model.Appointment;
 import Model.Report;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,10 +16,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import utils.DBQuery;
@@ -34,12 +29,11 @@ import utils.DBQuery;
  */
 public class Report_ApptTypesByMonth implements Initializable {
 
-    ////////// APPOINTMENT TYPE TABLEVIEW //////////
+    ////////// REPORT TABLEVIEW //////////
     @FXML private TableView<Report> tableViewReportApptTypesByMonth;
     @FXML private TableColumn<Report, String> colMonth;
     @FXML private TableColumn<Report, String> colTypeCount;
     @FXML private TableColumn<Report, String> colType;
-
 
     Stage stage;
     Parent scene;    
@@ -60,8 +54,10 @@ public class Report_ApptTypesByMonth implements Initializable {
         colType.setCellValueFactory(new PropertyValueFactory<>("type"));
     }    
     
-    @FXML
-    private void onActionDisplayMain(ActionEvent event) throws IOException {
+    
+    //-------- RETURN TO MAIN SCREEN --------//
+    
+    @FXML private void onActionDisplayMain(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/MainScreen.fxml"));
         stage.setScene(new Scene(scene));
