@@ -5,7 +5,6 @@
  */
 package View_Controller;
 
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,7 +12,6 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -36,14 +34,17 @@ import utils.DBQuery;
  * @author Marlene
  */
 public class LoginController implements Initializable {
-
-    @FXML private Label labelTitle;
-    @FXML private Button btLogin;
+    
+    ////////// TEXTFIELDS //////////
     @FXML private TextField txtUsername;
     @FXML private TextField txtPassword;
+    ////////// LABELS //////////
     @FXML private Label labelUsername;
     @FXML private Label labelPassword;
+    @FXML private Label labelTitle;
+    ////////// BUTTONS //////////
     @FXML private Button btExit;
+    @FXML private Button btLogin;
     
     Stage stage;
     Parent scene;
@@ -69,6 +70,9 @@ public class LoginController implements Initializable {
             btExit.setText(rb.getString("buttonExit")); 
     }    
 
+    
+    //-------- LOGIN BUTTON --------//
+    
     @FXML private void onActionLogin(ActionEvent event) throws IOException, SQLException {
         // ResourceBundle added for error messages.
         rb = ResourceBundle.getBundle("Languages/Language", Locale.getDefault());
@@ -98,10 +102,16 @@ public class LoginController implements Initializable {
         }
     }
 
+    
+    //-------- CURRENT USER --------//
+    
     public static String getCurrentUser() {   
         getCurrentUser = userNameInput;     
     return getCurrentUser;
     }
+    
+    
+    //-------- CREATE USER LOG --------//
     
     public static void getUserLoggingActivity()  {        
         try{
@@ -115,9 +125,11 @@ public class LoginController implements Initializable {
         }       
     }
     
+    
+    //-------- EXIT PROGRAM --------//    
+    
     @FXML private void onActionExit(ActionEvent event) {
         
-        // Exit pop-up window
         rb = ResourceBundle.getBundle("Languages/Language", Locale.getDefault());        
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(rb.getString("buttonExit"));
