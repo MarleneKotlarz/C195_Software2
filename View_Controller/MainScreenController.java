@@ -9,15 +9,12 @@ import Model.Appointment;
 import Model.Customer;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.time.temporal.WeekFields;
 import java.util.Locale;
 import java.util.Optional;
@@ -32,7 +29,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
@@ -42,7 +38,6 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
@@ -55,29 +50,17 @@ import utils.DBQuery;
  */
 public class MainScreenController implements Initializable {
 
-    ////////// BUTTONS //////////
-    @FXML private Button btAddAppt;
-    @FXML private Button btDisplayCus;
-    @FXML private Button btLogout;    
-    @FXML private Button btUpdateAppt;
-    @FXML private Button btResetAppt;
-    @FXML private Button btSearchCustomer;
-    @FXML private Button btResetCustomer;
-    @FXML private Button btSelectCustomer;
-    @FXML private Button btDeleteAppt;
-    @FXML private Button btSearchAppt;
     ////////// DATEPICKER //////////
-    @FXML private DatePicker datePickerView;
     @FXML private DatePicker datePickerAppt;
+    @FXML private DatePicker datePickerView;    
+    ////////// RADIOBUTTONS //////////
+    @FXML private RadioButton rbByMonth;
+    @FXML private RadioButton rbByWeek;
+    @FXML private RadioButton rbViewAll;
     ////////// COMBOBOXES //////////
     @FXML private ComboBox comboType;
     @FXML private ComboBox<String> comboStart;
     @FXML private ComboBox<String> comboEnd;
-    ////////// RADIO BUTTONS //////////
-    @FXML private ToggleGroup TG;
-    @FXML private RadioButton rbtByMonth;
-    @FXML private RadioButton rbtByWeek;
-    @FXML private RadioButton rbtAll;
     ////////// TEXTFIELDS //////////    
     @FXML private TextField txtApptID;
     @FXML private TextField txtCusId;
@@ -110,19 +93,16 @@ public class MainScreenController implements Initializable {
     String selectedEndTime;
     String combinedDateTimeStart;
     String combinedDateTimeEnd;
-    Boolean isWeekMonthDatePickerSelected;
-    
+    Boolean isWeekMonthDatePickerSelected;   
   
     
     private static ObservableList<String> startTimes = FXCollections.observableArrayList();    
     private static ObservableList<String> endTimes = FXCollections.observableArrayList();
     private static ObservableList<String> appointment = FXCollections.observableArrayList();
-    private static ObservableList<String> types = FXCollections.observableArrayList();
- 
+    private static ObservableList<String> types = FXCollections.observableArrayList(); 
     
     private final DateTimeFormatter localDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm");
-    private final DateTimeFormatter dateDTF = DateTimeFormatter.ofPattern("dd-MM-YYYY");
     private final DateTimeFormatter monthDTF = DateTimeFormatter.ofPattern("MM");
 
     
@@ -152,18 +132,14 @@ public class MainScreenController implements Initializable {
         colApptCusId.setCellValueFactory(new PropertyValueFactory<>("cusId"));
         // Populate comboType with Appointment Types
         comboType.setItems(getAllTypes());  
-
         // Set up comboBox ObservableLists startTimes/ endTimes
         startTimes.addAll("07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00");
         endTimes.addAll("07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00");
         comboStart.setItems(startTimes);
         comboEnd.setItems(endTimes); 
 
-        
-
     }    
 
-    
     
     //-------- LOOKUP CUSTOMER --------//
     
@@ -225,22 +201,26 @@ public class MainScreenController implements Initializable {
         String customerId = txtCusId.getText();
         String title = txtTitle.getText();
         String description = txtDescription.getText();
-        String coType = comboType.getSelectionModel().getSelectedItem().toString();
+        int checkCoTypeSelection = comboType.getSelectionModel().getSelectedIndex();    
+        
+//        String coType = comboType.getSelectionModel().getSelectedItem().toString();
         
         // Add appointment if it is within BussinessHours and does not overlap with existing appointment
-        if(DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn) && DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes) == true) {
+        if(DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn) == true && 
+           DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes) == true &&
+           checkForBlankTextfields(title, description, checkCoTypeSelection) == true) {
             // Calls addAppointment method and passes in the required parameters
+            String coType = comboType.getValue().toString();
             DBQuery.addAppointment(customerId, title, description, coType, startSQLIn, endSQLIn);  
-        }else{
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error"); 
-            alert.setContentText("Please select an appointment time that is within business hours (08:00 - 17:00) and do not overlap existing appointments!");
-            alert.showAndWait();
-        }
+        }        
+
+     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\   
+ 
+       
         
+        //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
         // Display appointment tableview
         displayAppointments();
-
     }
     
    
@@ -271,18 +251,13 @@ public class MainScreenController implements Initializable {
             localZoneId = ZoneId.of(TimeZone.getDefault().getID());            
             ZonedDateTime endUTC = endLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
             String endSQLIn = String.valueOf(endUTC.toLocalDateTime());
-
-
             
             if(DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn) && DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes) == true) {
-
-            // Calls updateAppointment method and passes in required arguments
-            DBQuery.updateAppointment(title, description, coType, startSQLIn, endSQLIn, appointmentId);               
-
-            // Display appointment Tablview
-            displayAppointments();        
-            }
-            
+                // Calls updateAppointment method and passes in required arguments
+                DBQuery.updateAppointment(title, description, coType, startSQLIn, endSQLIn, appointmentId);    
+                // Display appointment Tablview
+                displayAppointments();        
+            }            
         }catch(Exception e) {
           System.out.println("Error editing appointment: " + e.getMessage());
         }  
@@ -293,7 +268,6 @@ public class MainScreenController implements Initializable {
     
     @FXML private void onActionDeleteAppt(ActionEvent event) {
         
-        // Selected appointment
         Appointment deleteAppt = tableViewAppt.getSelectionModel().getSelectedItem();
         String apptId = deleteAppt.getApptId();
         // Set AlertBox with Button
@@ -318,13 +292,13 @@ public class MainScreenController implements Initializable {
         tableViewAppt.setItems(DBQuery.getAllAppointments());
     }
     
+    
     //-------- POPULATE TEXTFIELDS TO UPDATE APPOINTMENT --------//
     
     @FXML void onClickSetAppointment(MouseEvent event) {
         
         // Get selected appointment record
-        Appointment displayAppt = tableViewAppt.getSelectionModel().getSelectedItem();
-        
+        Appointment displayAppt = tableViewAppt.getSelectionModel().getSelectedItem();        
         // Poluate textfields with data from Appointment TableView so they can be updated
         try {
             // Set data from tableview to textfields
@@ -336,9 +310,8 @@ public class MainScreenController implements Initializable {
             comboType.setValue(displayAppt.getType());
  
             //------------ Populate DatePicker & ComboBoxes ------------//
-            // You have to make sure that the formatter includes the patterns that are being passed in
-            
             //-- Time conversion --//
+            // Make sure that the formatter includes the patterns that are being passed in            
             // Start Times
             String startDateTime = displayAppt.getStart();
             LocalDateTime startLDT = LocalDateTime.parse(startDateTime, localDTF);
@@ -355,13 +328,11 @@ public class MainScreenController implements Initializable {
             // Set comboBox & DatePickervalues 
             comboStart.setValue(start);
             comboEnd.setValue(end);            
-            datePickerAppt.setValue(populateDatePicker);               
+            datePickerAppt.setValue(populateDatePicker);              
                 
         }catch(Exception e){
           System.out.println("Error onClickSetAppointment: " + e.getMessage());
-          e.printStackTrace();
         }
-
     }    
         
     
@@ -373,55 +344,62 @@ public class MainScreenController implements Initializable {
         return types;
     }  
 
+    
+    //-------- RADIOBUTTON VIEW BY MONTH --------//
 
     @FXML private void onActionRbtByMonth(ActionEvent event) {
         
-        Appointment selectAppt = new Appointment();
-        
+        Appointment selectAppt = new Appointment();        
         if (isWeekMonthDatePickerSelected == null) {
-        // Set AlertBox with Button
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Selection Missing");     
-        alert.setHeaderText("Information");
-        alert.setContentText("Please select a month using the calendar to the right.");
-        alert.showAndWait();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Selection Missing");     
+            alert.setHeaderText("Information");
+            alert.setContentText("Please select a month using the calendar to the right.");
+            alert.showAndWait();
+            rbByMonth.setSelected(false);
         } 
         else {
-            DBQuery.appointmentList.clear(); // must clear the tableview before filling it again
+            DBQuery.appointmentList.clear();
             LocalDate date = datePickerView.getValue();
             String monthDatepicker = date.format(monthDTF);
-            // call method to get appointments by month filter
+            // call method to get appointments by month method
             tableViewAppt.setItems(DBQuery.getAllAppointmentsByMonth(monthDatepicker)); 
-
         }
-}
+    }
+    
+    
+    //-------- RADIOBUTTON VIEW BY WEEK  --------//
 
     @FXML private void onActionRbtByWeek(ActionEvent event) {
         if (isWeekMonthDatePickerSelected == null) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Selection Missing");     
-        alert.setHeaderText("Information");
-        alert.setContentText("Please select a week using the calendar to the right.");
-        alert.showAndWait();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Selection Missing");     
+            alert.setHeaderText("Information");
+            alert.setContentText("Please select a week using the calendar to the right.");
+            alert.showAndWait();
+            rbByWeek.setSelected(false);
         } 
         else {
-            // send this week number to the dbquery.getAllAppointmentsByWeek()
             DBQuery.appointmentList.clear(); // must clear the tableview before filling it again
             LocalDate date = datePickerView.getValue();
             WeekFields weekFields = WeekFields.of(Locale.getDefault());
             int weekNumber = date.get(weekFields.weekOfWeekBasedYear());
             String weekDate = Integer.toString(weekNumber-1);
-            // call method to get appointments by week filter
             tableViewAppt.setItems(DBQuery.getAllAppointmentsByWeek(weekDate));  
         }
     }
+    
 
+    //-------- RADIOBUTTON ALL  --------//
     
     @FXML private void onActionRbtViewAll(ActionEvent event) {
         DBQuery.appointmentList.clear();
         tableViewAppt.setItems(DBQuery.getAllAppointments());
+        rbViewAll.setSelected(false);
     }
 
+    
+    //-------- VERIFY DATE SELECTION --------//
     
     @FXML private void onActionDatePickerTableView(ActionEvent event) {
         isWeekMonthDatePickerSelected = true;
@@ -445,6 +423,7 @@ public class MainScreenController implements Initializable {
         tableViewAppt.setItems(DBQuery.getAllAppointments());    
     }
     
+    
     //-------- DISPLAY CUSTOMER SCREEN --------//
     
     @FXML private void onActionDisplayCus(ActionEvent event) throws IOException {
@@ -453,25 +432,34 @@ public class MainScreenController implements Initializable {
         stage.setScene(new Scene(scene));
         stage.show();        
     }
+    
         
-    //-------- DISPLAY REPORTS SCREEN --------//
+    //-------- DISPLAY NUMBER OF APPOINTMENT TYPES BY MONTH --------//
     
     @FXML void onActionDisplayApptTypesByMonth(ActionEvent event) throws IOException {
+        DBQuery.getNumberOfApptTypesByMonth().clear();
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_ApptTypesByMonth.fxml"));
         stage.setScene(new Scene(scene));
         stage.show();  
     }
 
+    
+    //-------- DISPLAY APPOINTMENT TIMES BY MORNING AND AFTERNOON --------//
+    
     @FXML void onActionDisplayApptFilteredByTime(ActionEvent event) throws IOException {
+        DBQuery.reportApptFilteredByTime().clear();
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_ApptFilteredByTime.fxml"));
         stage.setScene(new Scene(scene));
         stage.show(); 
     }
 
+    
+    //-------- DISPLAY SCHEDULE FOR CONSULTANTS --------//
 
     @FXML void onActionDisplayConsultantSchedule(ActionEvent event) throws IOException {
+        DBQuery.reportGetAllAppointmentsByUser().clear();
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_ConsultantSchedule.fxml"));
         stage.setScene(new Scene(scene));
@@ -479,31 +467,48 @@ public class MainScreenController implements Initializable {
     }
 
     
+    //-------- LOGOUT BUTTON --------//    
+    
     @FXML private void onActionLogout(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Login.fxml"));
         stage.setScene(new Scene(scene));
         stage.show();        
     }
+    
 
+//-------- CHECK TEXTFIELDS --------//
     
-    
-    
-    
-    
-    
-    @FXML private void onActionDatePickerAppt(ActionEvent event) {          
+    public Boolean checkForBlankTextfields(String title, String description, int coType) {
+        
+        if (title.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Fields");
+            alert.setHeaderText("Invalid title field.");
+            alert.setContentText("Please enter a title.");
+            alert.showAndWait();
+            return false;
+        }
+        else if (description.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Fields");
+            alert.setHeaderText("Invalid description field.");
+            alert.setContentText("Please enter a description.");
+            alert.showAndWait();
+            return false;            
+        }
+        else if (coType<0) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Fields");
+            alert.setHeaderText("Invalid type selection.");
+            alert.setContentText("Please select a type.");
+            alert.showAndWait();
+            return false;
+        }       
+        else{
+        return true;    
+        }
     }
- 
-    
-    @FXML void onActionComboStart(ActionEvent event) {
-    }
-   
-    
-    @FXML void onActionComboEnd(ActionEvent event) {
-    }
-           
-    
-    
+
     
 }
