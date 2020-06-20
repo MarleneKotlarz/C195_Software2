@@ -43,6 +43,7 @@ public class DBQuery {
     public static ObservableList<Appointment> appointmentList = FXCollections.observableArrayList();
     public static ObservableList<Report> appointmentReport = FXCollections.observableArrayList();
     public static ObservableList<Report> appointmentsByMorningAfternoon = FXCollections.observableArrayList();
+    public static ObservableList<Appointment> appointmentsByUserReport = FXCollections.observableArrayList();    
     
     public static DateTimeFormatter localDTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  
     public static DateTimeFormatter timeDTF = DateTimeFormatter.ofPattern("HH:mm");
@@ -568,8 +569,16 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
                 // For overlapping appointment
                 // Checks if the appointment is within the timeframe of an existing appointment
                 if(comboStart.isAfter(dbStartUTC) && comboEnd.isBefore(dbEndUTC) || 
-                     comboEnd.isAfter(dbStartUTC) && comboEnd.isBefore(dbEndUTC) )
-                    isApptValid = false;
+                    comboEnd.isAfter(dbStartUTC) && comboEnd.isBefore(dbEndUTC) ||
+                    comboStart.isAfter(comboEnd))
+                    isApptValid = false;  
+                if (isApptValid == false) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");     
+                    alert.setHeaderText("Appointment Time Error");
+                    alert.setContentText("Appointments cannot overlap existing appointments and time must be scheduled chronologically.");
+                    alert.showAndWait();
+                }
             }             
         } catch (SQLException e) {
             System.out.println(e.getMessage()); 
@@ -729,6 +738,59 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
     //  Return the appointmentsByMorningAfternoon and set it to the tableview
     return appointmentsByMorningAfternoon;
     }
+    
+    
+     public static ObservableList<Appointment> reportGetAllAppointmentsByUser() {
+        String sqlStmt = "SELECT appointmentId, ap.createdBy, ap.customerId, customerName, title, description, type, start, end \n" +
+        "FROM appointment ap \n" +
+        "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
+        "ORDER BY ap.createdBy";
+        
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sqlStmt);
+            rs = ps.executeQuery(); // submits entire SQL statement
+
+            while(rs.next()) {
+                String apptId = rs.getString("appointmentId");
+                String cusId = rs.getString("customerId");
+                String cusName = rs.getString("customerName");
+                String title = rs.getString("title");
+                String descr = rs.getString("description");
+                String type = rs.getString("type");       
+                String createdBy = rs.getString("createdBy");
+                
+                
+                //Convert timestamp appointment table "start" & "end" column time from UTC to LocalDateTime that the user selected
+                LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
+                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
+                
+                //-- Time conversion --//
+                // START TIME //
+                // Combines dateTime with a time-zone to create a ZonedDateTime . Here it is 'UTC'(ex: 2020-06-10T13:00Z[UTC])
+                ZonedDateTime zdtStartOutput = startUTC.atZone(ZoneId.of("UTC"));
+                // Returns a copy of dateTime with a different time-zone, retaining the instant. Here the zone is selected by systemDefault(ex: 2020-06-10T09:00-04:00[America/New_York])
+                ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
+                // Convert local zone to localDateTime
+                LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
+                // Convert LocalDateTime to a String using a formatter so it can be passed in the .add() method
+                String formattedStartTime = ldtStartOutput.format(localDTF);
+                
+                // END TIME //                
+                ZonedDateTime zdtEndOutput = endUTC.atZone(ZoneId.of("UTC"));
+                ZonedDateTime zdtEndOutToLocalTimeZone = zdtEndOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
+                LocalDateTime ldtEndOutput = zdtEndOutToLocalTimeZone.toLocalDateTime();
+                String formattedEndTime = ldtEndOutput.format(localDTF);
+                
+                // Assign parameters to .add method
+                appointmentsByUserReport.add(new Appointment(apptId, cusId, cusName, title, descr, type, formattedStartTime, formattedEndTime, createdBy));   
+            }            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return appointmentsByUserReport;          
+    } 
+    
     
 }
     
