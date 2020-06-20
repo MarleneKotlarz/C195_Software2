@@ -47,7 +47,7 @@ public class CustomerController implements Initializable {
     ////////// Buttons //////////
     @FXML private Button btAddCus;
     @FXML private Button btUpdateCus;
-    @FXML private Button btClear;
+    @FXML private Button btResetCustomer;
     @FXML private Button btDisplayMain;
     @FXML private Button btDeleteCus;
     @FXML private Button btSearchCus;
@@ -80,7 +80,6 @@ public class CustomerController implements Initializable {
         txtCusId.setDisable(true);        
 
         // Display all Customers in the Tableview        
-        //tableViewCustomer.setItems(DBQuery.getAllCustomers());
         displayCustomers();
         
         // Set up columns in Customer tableView 
@@ -95,7 +94,7 @@ public class CustomerController implements Initializable {
                 
         // Display ComboBox Cities
         comboCity.setItems(DBQuery.getAllCities());  
-        //validCustomer();
+
         
     }    
     
@@ -128,8 +127,6 @@ public class CustomerController implements Initializable {
             // pass customerName and associated addressId
             DBQuery.addCustomer(name, addressId);
         }
-               
- 
         // Populate Customer tableView
         displayCustomers();            
             
@@ -158,6 +155,7 @@ public class CustomerController implements Initializable {
             DBQuery.customerList.clear();
             // Get current customer list
             DBQuery.getAllCustomers();
+            
         }catch(Exception e) {
           System.out.println("Error updating customer: " + e.getMessage());
         }      
@@ -167,21 +165,28 @@ public class CustomerController implements Initializable {
     //-------- DELETE CUSTOMER --------//
     
     @FXML private void onActionDeleteCus(ActionEvent event) {
-        // select customer
+        
         Customer deleteCus = tableViewCustomer.getSelectionModel().getSelectedItem();
         String customerId = deleteCus.getCustomerId();
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you really want to delete this customer?");
         alert.setTitle("Delete Customer");
-        Optional<ButtonType> result = alert.showAndWait();
-        if(result.isPresent() && result.get() == ButtonType.OK) {            
-            //call delete Customer method and pass in value
-            DBQuery.deleteCustomer(customerId);           
-            // refresh customer list and load tableview again
-            DBQuery.customerList.clear();        
-            displayCustomers();
-        }
+        
+        alert.showAndWait().ifPresent((response -> { // Lambda Expression used to confirm alert button response for customer deletion
+            if(response == ButtonType.OK) {
+                try{
+                    DBQuery.deleteCustomer(customerId);           
+                    // refresh customer list and load tableview again
+                    DBQuery.customerList.clear();        
+                    displayCustomers();
+                }catch (Exception e){
+                    System.out.println("Error deleting customer - CustomerController: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }));
     }
 
+    
     
     //-------- DISPLAY MAINSCREEN --------//
     
@@ -197,7 +202,7 @@ public class CustomerController implements Initializable {
 
     //-------- CLEAR TEXTFIELDS --------//
     
-    @FXML private void onActionClear(ActionEvent event) {
+    @FXML private void onActionResetCusTxtfields(ActionEvent event) {
             txtCusId.setText("");
             txtName.setText("");
             txtAddress.setText("");
@@ -237,7 +242,7 @@ public class CustomerController implements Initializable {
 
 
     public Boolean checkForBlankTextfields(String name, String address, int checkCoCity, String postalCode, String phone) {
-        System.out.println("coCity:" + checkCoCity);
+        
         if(name.isEmpty() || address.isEmpty() ||  checkCoCity < 0 || postalCode.isEmpty() || phone.isEmpty()) {
   
             Alert alert = new Alert(Alert.AlertType.ERROR);
