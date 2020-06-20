@@ -51,10 +51,10 @@ public class DBQuery {
     
     
 //------------------------------------//    
-//-------- User login Screen --------//
+//-------- LOGIN CONTROLLER --------//
 //----------------------------------//    
     
-    //-------- Login --------//
+    //-------- CHECK LOGIN --------//
     public static boolean checkLogin(String userNameInput, String passwordInput) {
         
         String sqlStmt = "SELECT userName, password FROM user WHERE userName = ? AND password = ?";  // ? is a placeholder value
@@ -65,8 +65,7 @@ public class DBQuery {
             ps.setString(1, userNameInput); // replaces first ? in SQL statement
             ps.setString(2, passwordInput); // replaces second ? in SQL statement
             // process results
-            rs = ps.executeQuery(); // submits entire SQL statement
-            
+            rs = ps.executeQuery(); // submits entire SQL statement            
             if (rs.next()) {
                 User user = new User();
                 user.setUserName(rs.getString("userName"));
@@ -74,13 +73,14 @@ public class DBQuery {
                 return true;
             }
         } catch (SQLException e) {
-            System.out.println(e.getMessage()); 
+            System.out.println("Check checkLogin SQL code: " + e.getMessage()); 
         }
         return false;
     }
     
     
-    //-------- 15min Alert --------//
+    //-------- 15 MIN ALERT --------//
+    
     public static void user15MinApptReminder(String user) throws SQLException {
         String sqlStmt1 = "SELECT userId FROM user WHERE userName = ?";
             ps = conn.prepareStatement(sqlStmt1);
@@ -92,17 +92,14 @@ public class DBQuery {
             }        
         
         String sqlStmt = "SELECT customerName, appointmentId, userId, start FROM appointment ap INNER JOIN customer cu ON ap.customerId = cu.customerId WHERE userId = ?";
-
             ps = conn.prepareStatement(sqlStmt);
             ps.setString(1, userId); 
-            rs = ps.executeQuery();
-            
+            rs = ps.executeQuery();            
             LocalDateTime localUserTime = LocalDateTime.now();
-            
-            while (rs.next()) {
+             while (rs.next()) {
                 String cusName = rs.getString("customerName");
-                LocalDateTime startTimeAppt = rs.getTimestamp("start").toLocalDateTime();
-                
+                //-- Time Conversion --//
+                LocalDateTime startTimeAppt = rs.getTimestamp("start").toLocalDateTime();                
                 ZonedDateTime zdtStartOutput = startTimeAppt.atZone(ZoneId.of("UTC"));
                 ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
                 LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
@@ -121,11 +118,11 @@ public class DBQuery {
             
     
 //----------------------------------//      
-//-------- CUSTOMER SCREEN --------//
+//-------- CUSTOMER CONTROLLER --------//
 //--------------------------------//     
     
     
-//-------- POPULATE CITY COMBOBOX --------//
+    //-------- POPULATE CITY COMBOBOX --------//
     
     public static ObservableList<String> getAllCities()  {
         String sqlStmt = "SELECT city FROM city";
@@ -140,13 +137,13 @@ public class DBQuery {
                 cityList.add(cusCity.getCity());
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Check getAllCities SQL code: " + e.getMessage()); 
         }
         return cityList;
     }
     
 
-//-------- GET CITY ID  --------//
+    //-------- GET CITY ID  --------//
     
     public static String getCityId(String city) {
     String sqlStmt = "SELECT cityId FROM city WHERE city = ?"; // ? is a placeholder value
@@ -164,19 +161,18 @@ public class DBQuery {
                 return cityId;
             }
         } catch (SQLException e) {
-            System.out.println("Check your SQL");        
+            System.out.println("Check getCityId SQL code: " + e.getMessage());        
         }
         return null;
     }
     
 
-//-------- GET ADDRESSID FROM LAST ADDED CUSTOMER --------//    
+    //-------- GET ADDRESSID FROM LAST ADDED CUSTOMER --------//    
     
     public static String getAddressIdFromLastCustomerAdded() {
     String sqlStmt = "SELECT addressId FROM address Order By addressId DESC Limit 1"; // ? is a placeholder value
         rs = null;
-        String addressId;
-        
+        String addressId;        
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
@@ -186,13 +182,13 @@ public class DBQuery {
                 return addressId;
             }
         } catch (SQLException e) {
-            System.out.println("Check your SQL");        
+            System.out.println("Check getAddressIdFromLastCustomerAdded SQL code: " + e.getMessage());      
         }
         return null;
     }
     
     
-//-------- GET CUSTOMER INFO --------//
+    //-------- GET CUSTOMER INFO --------//
     
     public static ObservableList<Customer> getAllCustomers() {
         String sqlStmt = "SELECT customerId, customerName, address, address2, city, postalCode, country, phone\n" +            
@@ -218,18 +214,16 @@ public class DBQuery {
                 customerList.add(new Customer(id, name, add, add2, city, zip, country, phone));
             }
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("Check getAllCustomers SQL code: " + e.getMessage());
             }
             return customerList;        
     }
-       
+           
     
-    
-//-------- ADD ADDRESS --------//
+    //-------- ADD ADDRESS --------//
 
-    public static String addAddress(String address, String address2, String cityId, String postalCode, String phone) { // passing in addressDB table input fields
+    public static String addAddress(String address, String address2, String cityId, String postalCode, String phone) { 
         String sqlStmt = "INSERT INTO address (address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, ?, ?, ?, now(), ?, now(), ?)";
-               
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
@@ -242,14 +236,15 @@ public class DBQuery {
             ps.setString(7, LoginController.getCurrentUser);
             ps.execute(); // submits entire SQL statement
         } catch (SQLException e) {
-            System.out.println(e.getMessage()); 
+            System.out.println("Check addAddress SQL code: " + e.getMessage());
         }
         return null;
     }
     
-//-------- ADD CUSTOMER --------//
     
-    public static String addCustomer(String customerName, String addressId) { // passing in customerDB table input fields
+    //-------- ADD CUSTOMER --------//
+    
+    public static String addCustomer(String customerName, String addressId) { 
         String sqlStmt = "INSERT INTO customer (customerName, addressId, active, createDate, createdBy, lastUpdate, lastUpdateBy) VALUES (?, ?, '1', now(), ?, now(), ?)";
         
         try {
@@ -261,13 +256,13 @@ public class DBQuery {
             ps.setString(4, LoginController.getCurrentUser);            
             ps.execute(); // submits entire SQL statement
         } catch (SQLException e) {
-            System.out.println(e.getMessage()); 
+            System.out.println("Check addCustomer SQL code: " + e.getMessage());
         }
         return null;
     }    
    
     
-//-------- UPDATE CUSTOMER --------//
+    //-------- UPDATE CUSTOMER --------//
     
     public static void updateCustomer(String customerId, String name, String address, String address2, String cityId, String postalCode, String phone) throws SQLException {
 
@@ -292,7 +287,6 @@ public class DBQuery {
             String sqlStmt3 = "UPDATE address SET address = ?, address2 = ?, cityId = ?, postalCode = ?, phone = ? WHERE addressId = ?";
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt3);
-
             ps.setString(1, address);    
             ps.setString(2, address2);
             ps.setString(3, cityId);
@@ -302,24 +296,22 @@ public class DBQuery {
             ps.execute();
 
         } catch(SQLException e) {
-                System.out.println("SQL ERROR:" + e.getMessage());
+                System.out.println("Check updateCustomer SQL code: " + e.getMessage());
         }       
     }
     
     
-//-------- DELETE CUSTOMER AND ASSOCIATED ADDRESS --------//
+    //-------- DELETE CUSTOMER AND ASSOCIATED ADDRESS --------//
 
     public static String deleteCustomer(String customerId) {
         try {
             // Uses CustomerID to lookup Address ID from CustomerDB table
             String addressId = null;
             String sqlStmt1 = "SELECT addressId FROM customer WHERE customerId = ?";
-
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt1);
             ps.setString(1, customerId); 
-            rs = ps.executeQuery(); // submits entire SQL statement
-                
+            rs = ps.executeQuery(); // submits entire SQL statement                
                 while(rs.next()) { // assign rs to addressID for sqlStmt3 "?" placeholder variable
                     addressId = rs.getString(1);
                 }     
@@ -357,7 +349,7 @@ public class DBQuery {
 //------------------------------------------//    
     
     
-//-------- SEARCH FOR CUSTOMER --------//
+    //-------- SEARCH FOR CUSTOMER --------//
     
     public static String lookUpCustomer(String customerId, String customerName) {
         try {
@@ -377,23 +369,20 @@ public class DBQuery {
         }
         return null;
     }
+    
 
-    
-    
-//-------- GET APPOINTMENT INFO --------//    
+    //-------- GET ALL APPOINTMENT --------//    
     
     // Information for Appointment Tableview which displays customerName for each appointment 
     public static ObservableList<Appointment> getAllAppointments() {
         String sqlStmt = "SELECT appointmentId, ap.customerId, customerName, title, description, type, start, end \n" +
         "FROM appointment ap \n" +
         "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
-        "ORDER BY appointmentId";
-        
+        "ORDER BY appointmentId";        
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
-            rs = ps.executeQuery(); // submits entire SQL statement
-
+            rs = ps.executeQuery();
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
                 String cusId = rs.getString("customerId");
@@ -404,8 +393,7 @@ public class DBQuery {
                 
                 //Convert timestamp appointment table "start" & "end" column time from UTC to LocalDateTime that the user selected
                 LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
-                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
-                
+                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();                
                 //-- Time conversion --//
                 // START TIME //
                 // Combines dateTime with a time-zone to create a ZonedDateTime . Here it is 'UTC'(ex: 2020-06-10T13:00Z[UTC])
@@ -427,26 +415,26 @@ public class DBQuery {
                 appointmentList.add(new Appointment(apptId, cusId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
             }            
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Check getAllAppointments SQL code: " + e.getMessage());
         }
         return appointmentList;          
     } 
     
-       // Information for Appointment Tableview which displays customerName for each appointment 
+    
+    //-------- GET APPOINTMENT BY MONTH --------//    
+    
     public static ObservableList<Appointment> getAllAppointmentsByMonth(String datepickerSelection) {
         String sqlStmt = "SELECT appointmentId, customerName, title, description, type, start, end \n" +
         "FROM appointment ap \n" +
         "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
         "WHERE month(start) = ? \n" + // Insert the datepickerSelection into this variable
         "ORDER BY appointmentId";
-
         try {
             //String datepickerSelection = null;
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
             ps.setString(1, datepickerSelection);
-            rs = ps.executeQuery(); // submits entire SQL statement
-            
+            rs = ps.executeQuery();             
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
                 String cusName = rs.getString("customerName");
@@ -457,16 +445,11 @@ public class DBQuery {
                 LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
                 LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();                
 
-                //-------- Time conversion --------//
-                
+                //-------- Time conversion --------//                
                 // START TIME //
-                // Combines dateTime with a time-zone to create a ZonedDateTime . Here it is 'UTC'(ex: 2020-06-10T13:00Z[UTC])
                 ZonedDateTime zdtStartOutput = startUTC.atZone(ZoneId.of("UTC"));
-                // Returns a copy of dateTime with a different time-zone, retaining the instant. Here the zone is selected by systemDefault(ex: 2020-06-10T09:00-04:00[America/New_York])
                 ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
-                // Convert local zone to localDateTime
                 LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
-                // Convert LocalDateTime to a String using a formatter so it can be passed in the .add() method
                 String formattedStartTime = ldtStartOutput.format(localDTF);
                 
                 // END TIME //                
@@ -479,25 +462,25 @@ public class DBQuery {
                 appointmentList.add(new Appointment(apptId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
             }            
         } catch (SQLException e) {
-            e.printStackTrace();
+           System.out.println("Check getAllAppointmentsByMonth SQL code: " + e.getMessage());
         }
         return appointmentList;          
     } 
     
     
-        // Information for Appointment Tableview which displays customerName for each appointment 
+    //-------- GET APPOINTMENT BY WEEK --------//
+
     public static ObservableList<Appointment> getAllAppointmentsByWeek(String datepickerSelection) {
         String sqlStmt = "SELECT appointmentId, customerName, title, description, type, start, end \n" +
         "FROM appointment ap \n" +
         "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
         "WHERE week(start) = ? \n" + // Insert the datepickerSelection into this variable minus -1 (so if it's the 24th week of the year, subtract 1 from that number)
-        "ORDER BY appointmentId";
-        
+        "ORDER BY appointmentId";        
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
             ps.setString(1, datepickerSelection);            
-            rs = ps.executeQuery(); // submits entire SQL statement
+            rs = ps.executeQuery(); 
 
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
@@ -508,18 +491,13 @@ public class DBQuery {
                 
                 //Convert timestamp appointment table "start" & "end" column time from UTC to LocalDateTime that the user selected
                 LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
-                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
-                
+                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();                
 
                 //-------- Time conversion --------//                
                 // START TIME //
-                // Combines dateTime with a time-zone to create a ZonedDateTime . Here it is 'UTC'(ex: 2020-06-10T13:00Z[UTC])
                 ZonedDateTime zdtStartOutput = startUTC.atZone(ZoneId.of("UTC"));
-                // Returns a copy of dateTime with a different time-zone, retaining the instant. Here the zone is selected by systemDefault(ex: 2020-06-10T09:00-04:00[America/New_York])
                 ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
-                // Convert local zone to localDateTime
                 LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
-                // Convert LocalDateTime to a String using a formatter so it can be passed in the .add() method
                 String formattedStartTime = ldtStartOutput.format(localDTF);
                 
                 // END TIME //                
@@ -532,69 +510,78 @@ public class DBQuery {
                 appointmentList.add(new Appointment(apptId, cusName, title, descr, type, formattedStartTime, formattedEndTime));   
             }            
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Check getAllAppointmentsByWeek SQL code: " + e.getMessage());
         }
         return appointmentList;          
     } 
   
-  
-public static Boolean checkAppointmentOutsideBusinessHours(LocalTime comboStartSelection, LocalTime comboEndSelection) {
-
+    
+    //-------- CHECK BUSINESS HOURS --------//    
+    
+    public static Boolean checkAppointmentOutsideBusinessHours(LocalTime comboStartSelection, LocalTime comboEndSelection) {
         LocalTime openingTime = LocalTime.of(8, 0); // 08:00 AM
         LocalTime closingTime = LocalTime.of(17, 0); // 17:00 PM
         Boolean isApptValid = true;     
-        // Checks if appt is within Business Hours
-        if(comboStartSelection.isBefore(openingTime) || comboEndSelection.isAfter(closingTime))
-            isApptValid = false;                   
-        return isApptValid;    
+        try{
+            // Checks if appt is within Business Hours
+            if(comboStartSelection.isBefore(openingTime) || comboEndSelection.isAfter(closingTime))
+                isApptValid = false;    
+
+            if (isApptValid == false) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");     
+                alert.setHeaderText("Appointment Time Error");
+                alert.setContentText("Appointments have to be within business hours 08:00 - 17:00");
+                alert.showAndWait();
+            }               
+        }catch (NullPointerException e) {
+            System.out.println("Check checkOverlappingAppointments SQL code: " + e.getMessage());
+        }
+      return isApptValid;            
     } 
     
     
-public static Boolean checkOverlappingAppointments(String comboStartSelection, String comboEndSelection) {
-
+    //-------- CHECK FOR OVERLAPPING APPOINTMENTS --------//  
+    
+    public static Boolean checkOverlappingAppointments(String comboStartSelection, String comboEndSelection) {
         String sqlStmt = "SELECT start, end FROM appointment";
-        Boolean isApptValid = true;
-        
+        Boolean isApptValid = true;        
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
-            rs = ps.executeQuery(); // submits entire SQL statement
-
+            rs = ps.executeQuery(); 
             while(rs.next()) {
                 LocalDateTime dbStartUTC = rs.getTimestamp("start").toLocalDateTime();
                 LocalDateTime dbEndUTC = rs.getTimestamp("end").toLocalDateTime();                  
                 LocalDateTime comboStart = LocalDateTime.parse(comboStartSelection);
                 LocalDateTime comboEnd = LocalDateTime.parse(comboEndSelection);
                 
-                // For overlapping appointment
                 // Checks if the appointment is within the timeframe of an existing appointment
                 if(comboStart.isAfter(dbStartUTC) && comboEnd.isBefore(dbEndUTC) || 
                     comboEnd.isAfter(dbStartUTC) && comboEnd.isBefore(dbEndUTC) ||
                     comboStart.isAfter(comboEnd))
                     isApptValid = false;  
-                if (isApptValid == false) {
+
+                }
+                    if (isApptValid == false) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Error");     
                     alert.setHeaderText("Appointment Time Error");
                     alert.setContentText("Appointments cannot overlap existing appointments and time must be scheduled chronologically.");
                     alert.showAndWait();
-                }
             }             
         } catch (SQLException e) {
-            System.out.println(e.getMessage()); 
+            System.out.println("Check checkOverlappingAppointments SQL code: " + e.getMessage());
         }
         return isApptValid;    
     }
 
 
-
-//-------- ADD APPOINTMENT --------//
+    //-------- ADD APPOINTMENT --------//
 
     public static String addAppointment(String customerId, String title, String description, String type, String start, String end) {
-
         String sqlStmt = "INSERT INTO appointment (customerId, userId, title, description, location, contact, type, url, start, end, createDate, createdBy, lastUpdate, lastUpdateBy) \n" + 
             "VALUES (?, '1', ?, ?, 'location-sample-text', 'contact-sample-text', ?, 'url-sample-text', ?, ?, now(), ?, now(), ?)";    
-
         try {            
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
@@ -606,25 +593,22 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             ps.setString(6, end);
             ps.setString(7, LoginController.getCurrentUser);            
             ps.setString(8, LoginController.getCurrentUser);
-            ps.execute(); // submits entire SQL statement
+            ps.execute(); 
             
         } catch (SQLException e) {
-            System.out.println(e.getMessage()); 
+            System.out.println("Check addAppointment SQL code: " + e.getMessage());
         }
         return null;    
     }
     
-
-    
-//-------- UPDATE APPOINTMENT --------//
+  
+    //-------- UPDATE APPOINTMENT --------//
     
     public static String updateAppointment(String title, String description, String type, String start, String end, String appointmentId) {
-
         try {
             String sqlStmt = "UPDATE appointment SET title = ?, description = ?, type = ?, start = ?, end = ? WHERE appointmentId = ?";
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
-
             ps.setString(1, title);
             ps.setString(2, description);
             ps.setString(3, type);
@@ -634,13 +618,14 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             ps.execute();          
                   
         }catch(SQLException e) {
-            System.out.println("Update Appointment SQL ERROR:" + e.getMessage());
+            System.out.println("Check updateAppointment SQL code: " + e.getMessage());
         }
     return null;
     }
     
     
-//-------- DELETE APPOINTMENT --------//
+    //-------- DELETE APPOINTMENT --------//
+    
     public static String deleteAppointment(String appointmentId) {
         try {
             String sqlStmt = "DELETE FROM appointment WHERE appointmentId = ? ";
@@ -649,25 +634,26 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             ps.setString(1, appointmentId);
             ps.executeUpdate();
         }catch(SQLException e) {
-            System.out.println("Delete Appointment SQL ERROR:" + e.getMessage());
+            System.out.println("Check deleteAppointment SQL code: " + e.getMessage());
         }
         return null;
     }    
     
     
- //-------------------------------//     
-//-------- RECORD SCREEN --------//
-//------------------------------//       
+//-------------------------------//     
+//-------- REPORTS -------------//
+//-----------------------------//       
     
-    public static ObservableList<Report> getNumberOfApptTypesByMonth() {
-  
+    
+    //-------- REPORT - NUMBER OF APPOINTMENT TYPES BY MONTH --------//
+    
+    public static ObservableList<Report> getNumberOfApptTypesByMonth() {  
         try{
             String sqlStmt1 = "select MONTHNAME(start) AS Month, COUNT(*) AS CountType from appointment where type = 'English' GROUP BY Month";
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt1);
             rs = ps.executeQuery();            
-            String type = null;            
-            
+            String type = null;          
             while(rs.next()) {
                 String month = rs.getString("Month");
                 String typeCount = rs.getString("CountType");
@@ -679,7 +665,6 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt2);
             rs = ps.executeQuery();
-            
             while(rs.next()) {
                 String month = rs.getString("Month");
                 String typeCount = rs.getString("CountType");
@@ -688,14 +673,15 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             }                        
             
         }catch(SQLException e) {
-            System.out.println("numberOfApptTypesByMonth: " + e.getMessage());
+            System.out.println("Check getNumberOfApptTypesByMonth SQL code: " + e.getMessage());
         }
     return appointmentReport;
     }
     
+    
+    //-------- REPORT - APPOINTMENT FILTERED BY MORNING/AFTERNOON --------//
 
     public static ObservableList<Report> reportApptFilteredByTime() {
-
         String sqlStmt = "select appointmentId, start FROM appointment";       
         LocalTime morningStart = LocalTime.of(8, 0); 
         LocalTime morningEnd = LocalTime.of(11, 59);
@@ -704,12 +690,10 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
         
         ArrayList<String> morning = new ArrayList<>(); // creating an ArrayList to store morning appointmentIDs in
         ArrayList<String> afternoon = new ArrayList<>(); // creating an ArrayList to store afternoon appointmentIDs in
-
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
             rs = ps.executeQuery(); // submits entire SQL statement
-
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
                 LocalDateTime dbStartUTC = rs.getTimestamp("start").toLocalDateTime();
@@ -717,13 +701,12 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
                 ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
                 LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
                 LocalTime apptStart = ldtStartOutput.toLocalTime();
-                String start = apptStart.format(timeDTF);
          
                 // Checks if the appointment is within the morning or afternoon timeframe
-             if(apptStart.isAfter(morningStart) && apptStart.isBefore(morningEnd))
-                 morning.add(apptId);
-             else if(apptStart.isAfter(afternoonStart) && apptStart.isBefore(afternoonEnd))
-                   afternoon.add(apptId);
+                if(apptStart.isAfter(morningStart) && apptStart.isBefore(morningEnd))
+                morning.add(apptId);
+                else if(apptStart.isAfter(afternoonStart) && apptStart.isBefore(afternoonEnd))
+                afternoon.add(apptId);
             }
             
             String morningCount = String.valueOf(morning.size());
@@ -732,25 +715,24 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
             appointmentsByMorningAfternoon.add(new Report(afternoonCount, "Afternoon"));
             
         } catch (SQLException e) {
-            System.out.println(e.getMessage()); 
-
+            System.out.println("Check reportApptFilteredByTime SQL code: " + e.getMessage());
         }
     //  Return the appointmentsByMorningAfternoon and set it to the tableview
     return appointmentsByMorningAfternoon;
     }
     
     
-     public static ObservableList<Appointment> reportGetAllAppointmentsByUser() {
+    //-------- REPORT - SCHEDULE FOR CONSULTANTS --------//
+    
+    public static ObservableList<Appointment> reportGetAllAppointmentsByUser() {
         String sqlStmt = "SELECT appointmentId, ap.createdBy, ap.customerId, customerName, title, description, type, start, end \n" +
         "FROM appointment ap \n" +
         "INNER JOIN customer cu ON ap.customerId = cu.customerId \n" +
-        "ORDER BY ap.createdBy";
-        
+        "ORDER BY ap.createdBy";        
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sqlStmt);
-            rs = ps.executeQuery(); // submits entire SQL statement
-
+            rs = ps.executeQuery(); 
             while(rs.next()) {
                 String apptId = rs.getString("appointmentId");
                 String cusId = rs.getString("customerId");
@@ -758,22 +740,16 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
                 String title = rs.getString("title");
                 String descr = rs.getString("description");
                 String type = rs.getString("type");       
-                String createdBy = rs.getString("createdBy");
-                
+                String createdBy = rs.getString("createdBy");                
                 
                 //Convert timestamp appointment table "start" & "end" column time from UTC to LocalDateTime that the user selected
                 LocalDateTime startUTC = rs.getTimestamp("start").toLocalDateTime();
-                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();
-                
+                LocalDateTime endUTC = rs.getTimestamp("end").toLocalDateTime();                
                 //-- Time conversion --//
                 // START TIME //
-                // Combines dateTime with a time-zone to create a ZonedDateTime . Here it is 'UTC'(ex: 2020-06-10T13:00Z[UTC])
                 ZonedDateTime zdtStartOutput = startUTC.atZone(ZoneId.of("UTC"));
-                // Returns a copy of dateTime with a different time-zone, retaining the instant. Here the zone is selected by systemDefault(ex: 2020-06-10T09:00-04:00[America/New_York])
                 ZonedDateTime zdtStartOutToLocalTimeZone = zdtStartOutput.withZoneSameInstant(ZoneId.of(ZoneId.systemDefault().toString()));
-                // Convert local zone to localDateTime
                 LocalDateTime ldtStartOutput = zdtStartOutToLocalTimeZone.toLocalDateTime();
-                // Convert LocalDateTime to a String using a formatter so it can be passed in the .add() method
                 String formattedStartTime = ldtStartOutput.format(localDTF);
                 
                 // END TIME //                
@@ -786,7 +762,7 @@ public static Boolean checkOverlappingAppointments(String comboStartSelection, S
                 appointmentsByUserReport.add(new Appointment(apptId, cusId, cusName, title, descr, type, formattedStartTime, formattedEndTime, createdBy));   
             }            
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Check reportGetAllAppointmentsByUser SQL code: " + e.getMessage());
         }
         return appointmentsByUserReport;          
     } 
