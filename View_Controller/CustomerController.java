@@ -9,7 +9,6 @@ import Model.Address;
 import Model.Customer;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -35,7 +34,8 @@ import utils.DBQuery;
  * @author Marlene
  */
 public class CustomerController implements Initializable {
-    ////////// Textfields //////////
+    
+    ////////// TEXTFIELDS //////////
     @FXML private TextField txtCusId;
     @FXML private TextField txtName;
     @FXML private TextField txtAddress;
@@ -44,14 +44,7 @@ public class CustomerController implements Initializable {
     @FXML private TextField txtPostalCode;
     @FXML private TextField txtPhone;
     @FXML private TextField txtSearchCus;
-    ////////// Buttons //////////
-    @FXML private Button btAddCus;
-    @FXML private Button btUpdateCus;
-    @FXML private Button btResetCustomer;
-    @FXML private Button btDisplayMain;
-    @FXML private Button btDeleteCus;
-    @FXML private Button btSearchCus;
-    ////////// TableView //////////
+    ////////// TABLEVIEW //////////
     @FXML private TableView<Customer> tableViewCustomer;
     @FXML private TableColumn<Customer, String> colCusId;
     @FXML private TableColumn<Customer, String> colName;
@@ -61,15 +54,13 @@ public class CustomerController implements Initializable {
     @FXML private TableColumn<Customer, String> colPostalCode;
     @FXML private TableColumn<Customer, String> colCountry;
     @FXML private TableColumn<Customer, String> colPhone;
-
    
     Stage stage;
     Parent scene;
     String cusId;
     Address address;
     
- 
-    
+     
     /**
      * Initializes the controller class.
      */
@@ -94,7 +85,6 @@ public class CustomerController implements Initializable {
                 
         // Display ComboBox Cities
         comboCity.setItems(DBQuery.getAllCities());  
-
         
     }    
     
@@ -113,7 +103,6 @@ public class CustomerController implements Initializable {
         String addressId = null;
         
         if(checkForBlankTextfields(name, address, checkCoCitySelection, postalCode, phone) == true){            
-
             //clear() method is used to remove all the elements from a Set not to delete them.
             DBQuery.customerList.clear();
             // get String value from comboCity selection
@@ -128,8 +117,7 @@ public class CustomerController implements Initializable {
             DBQuery.addCustomer(name, addressId);
         }
         // Populate Customer tableView
-        displayCustomers();            
-            
+        displayCustomers();                       
 
     }
     
@@ -143,19 +131,17 @@ public class CustomerController implements Initializable {
             String name = txtName.getText();
             String address = txtAddress.getText();
             String address2 = txtAddress2.getText();
-            // get String value from comboCity selection
-            String coCity = comboCity.getValue().toString(); 
-            // get cityId based on coCity value
-            String cityId = DBQuery.getCityId(coCity); 
+            int checkCoCitySelection = comboCity.getSelectionModel().getSelectedIndex();            
             String postalCode = txtPostalCode.getText();
             String phone = txtPhone.getText();         
             
-            DBQuery.updateCustomer(customerId, name, address, address2, cityId, postalCode, phone);
-            // Clear list to prevent doubled entries
-            DBQuery.customerList.clear();
-            // Get current customer list
-            DBQuery.getAllCustomers();
-            
+            if(checkForBlankTextfields(name, address, checkCoCitySelection, postalCode, phone) == true){          
+                String coCity = comboCity.getValue().toString(); 
+                String cityId = DBQuery.getCityId(coCity); 
+                DBQuery.updateCustomer(customerId, name, address, address2, cityId, postalCode, phone);
+                DBQuery.customerList.clear();
+                DBQuery.getAllCustomers();
+            }
         }catch(Exception e) {
           System.out.println("Error updating customer: " + e.getMessage());
         }      
@@ -186,7 +172,6 @@ public class CustomerController implements Initializable {
         }));
     }
 
-    
     
     //-------- DISPLAY MAINSCREEN --------//
     
@@ -239,22 +224,55 @@ public class CustomerController implements Initializable {
         DBQuery.customerList.clear();
         tableViewCustomer.setItems(DBQuery.getAllCustomers());
     }
+    
 
-
+    //-------- CHECK TEXTFIELDS --------//
+    
     public Boolean checkForBlankTextfields(String name, String address, int checkCoCity, String postalCode, String phone) {
         
-        if(name.isEmpty() || address.isEmpty() ||  checkCoCity < 0 || postalCode.isEmpty() || phone.isEmpty()) {
-  
+        if(name.isEmpty()) {  
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Invalid Fields");
-            alert.setHeaderText("Please correct the invalid customer field");
-            alert.setContentText("Please correct the invalid customer field");
+            alert.setHeaderText("Invalid customer name field.");
+            alert.setContentText("Please enter a name.");
             alert.showAndWait();
             return false;
-        }else{
-            return true;
+        }        
+        else if (address.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Fields");
+            alert.setHeaderText("Invalid customer address field.");
+            alert.setContentText("Please enter an address.");
+            alert.showAndWait();
+            return false;
+        }
+        else if (checkCoCity <0) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Fields");
+            alert.setHeaderText("Invalid customer city selection.");
+            alert.setContentText("Please select a city");
+            alert.showAndWait();
+            return false;            
+        }
+        else if (postalCode.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Fields");
+            alert.setHeaderText("Invalid customer postalcode field.");
+            alert.setContentText("Please enter a postalcode.");
+            alert.showAndWait();
+            return false;
+        }
+        else if (phone.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Fields");
+            alert.setHeaderText("Invalid customer phone nummber field.");
+            alert.setContentText("Please enter a phone number.");
+            alert.showAndWait();
+            return false;
+        }                
+        else{
+        return true;    
         }
     }
-    
-    
+
 }
