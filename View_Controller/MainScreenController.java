@@ -273,11 +273,15 @@ public class MainScreenController implements Initializable {
             String endSQLIn = String.valueOf(endUTC.toLocalDateTime());
 
 
+            
+            if(DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn) && DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes) == true) {
+
             // Calls updateAppointment method and passes in required arguments
             DBQuery.updateAppointment(title, description, coType, startSQLIn, endSQLIn, appointmentId);               
 
             // Display appointment Tablview
             displayAppointments();        
+            }
             
         }catch(Exception e) {
           System.out.println("Error editing appointment: " + e.getMessage());
@@ -467,8 +471,11 @@ public class MainScreenController implements Initializable {
     }
 
 
-    @FXML void onActionDisplayConsultantSchedule(ActionEvent event) {
-
+    @FXML void onActionDisplayConsultantSchedule(ActionEvent event) throws IOException {
+        stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
+        scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_ConsultantSchedule.fxml"));
+        stage.setScene(new Scene(scene));
+        stage.show(); 
     }
 
     
