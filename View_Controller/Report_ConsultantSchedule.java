@@ -29,7 +29,7 @@ import utils.DBQuery;
  */
 public class Report_ConsultantSchedule implements Initializable {
 
-
+////////// REPORT TABLEVIEW //////////
 @FXML private TableView<Appointment> tableViewReportConsultantSchedule;
 @FXML private TableColumn<Appointment, String> colApptId;
 @FXML private TableColumn<Appointment, String> colUser;
@@ -64,6 +64,8 @@ public void initialize(URL url, ResourceBundle rb) {
     
  }  
 
+
+//-------- RETURN TO MAIN SCREEN --------//
  
 @FXML void onActionDisplayMain(ActionEvent event) throws IOException {
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
@@ -73,6 +75,4 @@ public void initialize(URL url, ResourceBundle rb) {
 }
   
 
-
-    
 }
