@@ -8,12 +8,13 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" prefHeight="655.0" prefWidth="678.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="View_Controller.CustomerController">
+<AnchorPane id="AnchorPane" prefHeight="618.0" prefWidth="758.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="View_Controller.CustomerController">
    <children>
-      <SplitPane dividerPositions="0.4017725258493353" orientation="VERTICAL" prefHeight="421.0" prefWidth="747.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <SplitPane dividerPositions="0.44104134762633995" orientation="VERTICAL" prefHeight="421.0" prefWidth="747.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <items>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="280.0" prefWidth="699.0">
                <children>
@@ -32,49 +33,51 @@
                   </VBox>
                   <VBox layoutX="179.0" layoutY="74.0" prefHeight="120.0" prefWidth="134.0" spacing="2.0">
                      <children>
-                        <TextField fx:id="txtCusId" disable="true" editable="false" />
+                        <TextField fx:id="txtCusId" disable="true" editable="false" text="AUTO - GEN" />
                         <TextField fx:id="txtName" />
                         <TextField fx:id="txtAddress" />
-                        <TextField fx:id="txtAddress2" />
+                        <TextField fx:id="txtAddress2" promptText="optional" />
                      </children>
                   </VBox>
-                  <Button fx:id="btAddCus" layoutX="502.0" layoutY="210.0" mnemonicParsing="false" onAction="#onActionAddCus" prefHeight="25.0" prefWidth="134.0" text="Add Customer" />
-                  <Button fx:id="btUpdateCus" layoutX="340.0" layoutY="210.0" mnemonicParsing="false" onAction="#onActionUpdateCus" prefHeight="25.0" prefWidth="134.0" text="Update Customer" />
-                  <VBox layoutX="367.0" layoutY="74.0" prefHeight="96.0" prefWidth="100.0" spacing="10.0">
+                  <VBox layoutX="412.0" layoutY="74.0" prefHeight="96.0" prefWidth="100.0" spacing="10.0">
                      <children>
                         <Label text="City" />
                         <Label text="Postal Code" />
                         <Label text="Phone" />
                      </children>
                   </VBox>
-                  <VBox layoutX="445.0" layoutY="72.0" prefHeight="120.0" prefWidth="134.0" spacing="2.0">
+                  <VBox layoutX="512.0" layoutY="74.0" prefHeight="120.0" prefWidth="134.0" spacing="2.0">
                      <children>
                         <ComboBox fx:id="comboCity" prefWidth="150.0" promptText="Choose city" />
                         <TextField fx:id="txtPostalCode" />
                         <TextField fx:id="txtPhone" />
                      </children>
                   </VBox>
-                  <Button fx:id="btClear" layoutX="179.0" layoutY="210.0" mnemonicParsing="false" onAction="#onActionClear" prefHeight="25.0" prefWidth="134.0" text="Clear" />
+                  <HBox layoutX="129.0" layoutY="204.0" prefHeight="51.0" prefWidth="547.0" spacing="70.0">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#onActionResetCusTxtfields" prefHeight="25.0" prefWidth="80.0" text="Reset" />
+                        <Button mnemonicParsing="false" onAction="#onActionAddCus" prefHeight="25.0" prefWidth="80.0" text="Add" />
+                        <Button mnemonicParsing="false" onAction="#onActionUpdateCus" prefHeight="25.0" prefWidth="80.0" text="Update " />
+                        <Button mnemonicParsing="false" onAction="#onActionDeleteCus" prefHeight="25.0" prefWidth="80.0" text="Delete " />
+                     </children>
+                  </HBox>
                </children>
             </AnchorPane>
-            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="346.0" prefWidth="714.0">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="383.0" prefWidth="676.0">
                <children>
-                  <TableView fx:id="tableViewCustomer" layoutX="34.0" layoutY="70.0" prefHeight="215.0" prefWidth="602.0">
+                  <TableView fx:id="tableViewCustomer" layoutX="37.0" layoutY="30.0" onMouseClicked="#onClickDisplaySelectedCustomer" prefHeight="215.0" prefWidth="686.0">
                      <columns>
-                        <TableColumn fx:id="colCusId" prefWidth="51.0" text="ID" />
-                        <TableColumn fx:id="colName" prefWidth="99.0" text="Name" />
-                        <TableColumn fx:id="colAddress" prefWidth="75.0" text="Adress" />
-                        <TableColumn fx:id="colAddress2" prefWidth="75.0" text="Adress 2" />
-                        <TableColumn fx:id="colCity" prefWidth="75.0" text="City" />
-                        <TableColumn fx:id="colPostalCode" prefWidth="83.0" text="Postal Code" />
-                        <TableColumn fx:id="colCountry" prefWidth="67.0" text="Country" />
-                        <TableColumn fx:id="colPhone" prefWidth="75.0" text="Phone" />
+                        <TableColumn fx:id="colCusId" prefWidth="40.0" text="ID" />
+                        <TableColumn fx:id="colName" prefWidth="110.0" text="Name" />
+                        <TableColumn fx:id="colAddress" prefWidth="101.0" text="Adress" />
+                        <TableColumn fx:id="colAddress2" prefWidth="72.0" text="Adress 2" />
+                        <TableColumn fx:id="colCity" prefWidth="87.0" text="City" />
+                        <TableColumn fx:id="colPostalCode" prefWidth="89.0" text="Postal Code" />
+                        <TableColumn fx:id="colCountry" prefWidth="82.0" text="Country" />
+                        <TableColumn fx:id="colPhone" prefWidth="104.0" text="Phone" />
                      </columns>
                   </TableView>
-                  <Label layoutX="49.0" layoutY="26.0" text="Search" />
-                  <TextField fx:id="txtSearchCus" layoutX="101.0" layoutY="22.0" promptText="Customer Name" />
-                  <Button fx:id="btDisplayMain" layoutX="502.0" layoutY="325.0" mnemonicParsing="false" onAction="#onActionDisplayMain" prefHeight="25.0" prefWidth="134.0" text="Main Menu" />
-                  <Button fx:id="btDeleteCus" layoutX="502.0" layoutY="22.0" mnemonicParsing="false" onAction="#onActionDeleteCus" prefHeight="25.0" prefWidth="134.0" text="Delete Customer" />
+                  <Button layoutX="616.0" layoutY="274.0" mnemonicParsing="false" onAction="#onActionDisplayMain" prefHeight="25.0" prefWidth="80.0" text="Main Menu" />
                </children>
             </AnchorPane>
          </items>
