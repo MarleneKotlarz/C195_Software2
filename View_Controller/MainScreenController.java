@@ -180,9 +180,33 @@ public class MainScreenController implements Initializable {
 
     //-------- ADD APPOINTMENT --------//
     
-    @FXML private void onActionAddAppt(ActionEvent event) {
+    @FXML private void onActionAddAppt(ActionEvent event) { // REQUIREMENT C, E
         
-        //-- Time conversion --//
+        try {
+            if (datePickerAppt.getValue() == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");     
+            alert.setHeaderText("Appointment Time Error");
+            alert.setContentText("Please select a date.");
+            alert.showAndWait();             
+            } 
+            if (comboStart.getValue() == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");     
+            alert.setHeaderText("Appointment Time Error");
+            alert.setContentText("Please select a start time.");
+            alert.showAndWait();                 
+            }
+            if (comboEnd.getValue() == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");     
+            alert.setHeaderText("Appointment Time Error");
+            alert.setContentText("Please select a end time.");
+            alert.showAndWait();                 
+            }                         
+          
+        if (datePickerAppt != null && comboStart != null && comboEnd != null) {
+           //-- Time conversion --//
         LocalDate localDate = datePickerAppt.getValue(); // Get date from datePicker to use it for the localTime assignment
         // Start Times
         LocalTime startTimes = LocalTime.parse(comboStart.getSelectionModel().getSelectedItem(), timeDTF); // Convert String comboBox to LocalTime type by using parse method and assign it to selected item
@@ -202,41 +226,30 @@ public class MainScreenController implements Initializable {
         String title = txtTitle.getText();
         String description = txtDescription.getText();
         int checkCoTypeSelection = comboType.getSelectionModel().getSelectedIndex();    
-        
-//        String coType = comboType.getSelectionModel().getSelectedItem().toString();
-        
+       
         // Add appointment if it is within BussinessHours and does not overlap with existing appointment
-        if(DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn) == true && 
-           DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes) == true &&
-           checkForBlankTextfields(title, description, checkCoTypeSelection) == true) {
+        if(DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn) == true && // REQUIREMENT F
+           DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes) == true && // REQUIREMENT F
+           checkForBlankTextfields(title, description, checkCoTypeSelection) == true) { // REQUIREMENT F
             // Calls addAppointment method and passes in the required parameters
             String coType = comboType.getValue().toString();
             DBQuery.addAppointment(customerId, title, description, coType, startSQLIn, endSQLIn);  
         }        
 
-     //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\   
- 
-       
-        
-        //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
         // Display appointment tableview
-        displayAppointments();
+        displayAppointments();   
+        }
+      
+    }catch (NullPointerException e) {
+            System.out.println("Check onActionAddAppt code: " + e.getMessage());
     }
-    
+    }
    
     //-------- UPDATE APPOINTMENT --------//
     
-    @FXML private void onActionUpdateAppt(ActionEvent event) {
+    @FXML private void onActionUpdateAppt(ActionEvent event) { // REQUIREMENT C, E
         
-        try {
-            // Appointment textfields needed for updateAppointment arguments
-            String customerId = txtCusId.getText();
-            String customerName = txtCustomer.getText();
-            String title = txtTitle.getText();
-            String description = txtDescription.getText();
-            String coType = comboType.getSelectionModel().getSelectedItem().toString();
-            String appointmentId = txtApptID.getText();
-
+        try {        
             //-- Time Conversion --//
             LocalDate localDate = datePickerAppt.getValue();
             // Start Times        
@@ -251,22 +264,34 @@ public class MainScreenController implements Initializable {
             localZoneId = ZoneId.of(TimeZone.getDefault().getID());            
             ZonedDateTime endUTC = endLDT.atZone(localZoneId).withZoneSameInstant(ZoneId.of("UTC"));
             String endSQLIn = String.valueOf(endUTC.toLocalDateTime());
+
+            // Appointment textfields needed for updateAppointment arguments
+            String customerId = txtCusId.getText();
+            String customerName = txtCustomer.getText();
+            String title = txtTitle.getText();
+            String description = txtDescription.getText();
+            int checkCoTypeSelection = comboType.getSelectionModel().getSelectedIndex();                
+            String appointmentId = txtApptID.getText();
+
+            if(DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn) == true && // REQUIREMENT F
+            DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes) == true && // REQUIREMENT F
+            checkForBlankTextfields(title, description, checkCoTypeSelection) == true) { // REQUIREMENT F
+            // Calls addAppointment method and passes in the required parameters
+            String coType = comboType.getValue().toString();
+            DBQuery.updateAppointment(title, description, coType, startSQLIn, endSQLIn, appointmentId);               
             
-            if(DBQuery.checkOverlappingAppointments(startSQLIn, endSQLIn) && DBQuery.checkAppointmentOutsideBusinessHours(startTimes, endTimes) == true) {
-                // Calls updateAppointment method and passes in required arguments
-                DBQuery.updateAppointment(title, description, coType, startSQLIn, endSQLIn, appointmentId);    
-                // Display appointment Tablview
-                displayAppointments();        
-            }            
+            // Display appointment Tablview
+            displayAppointments();                                
+        }
         }catch(Exception e) {
-          System.out.println("Error editing appointment: " + e.getMessage());
-        }  
+            System.out.println("Check onActionUpdateAppt code: " + e.getMessage());
+        }
     }
     
     
     //-------- DELETE APPOINTMENT --------//
     
-    @FXML private void onActionDeleteAppt(ActionEvent event) {
+    @FXML private void onActionDeleteAppt(ActionEvent event) { // REQUIREMENT C
         
         Appointment deleteAppt = tableViewAppt.getSelectionModel().getSelectedItem();
         String apptId = deleteAppt.getApptId();
@@ -295,7 +320,7 @@ public class MainScreenController implements Initializable {
     
     //-------- POPULATE TEXTFIELDS TO UPDATE APPOINTMENT --------//
     
-    @FXML void onClickSetAppointment(MouseEvent event) {
+    @FXML void onClickSetAppointment(MouseEvent event) { // REQUIREMENT E
         
         // Get selected appointment record
         Appointment displayAppt = tableViewAppt.getSelectionModel().getSelectedItem();        
@@ -327,7 +352,7 @@ public class MainScreenController implements Initializable {
             LocalDate populateDatePicker = dateLDT.toLocalDate();
             // Set comboBox & DatePickervalues 
             comboStart.setValue(start);
-            comboEnd.setValue(end);            
+            comboEnd.setValue(end);              
             datePickerAppt.setValue(populateDatePicker);              
                 
         }catch(Exception e){
@@ -347,7 +372,7 @@ public class MainScreenController implements Initializable {
     
     //-------- RADIOBUTTON VIEW BY MONTH --------//
 
-    @FXML private void onActionRbtByMonth(ActionEvent event) {
+    @FXML private void onActionRbtByMonth(ActionEvent event) { // REQUIREMENT D
         
         Appointment selectAppt = new Appointment();        
         if (isWeekMonthDatePickerSelected == null) {
@@ -370,7 +395,7 @@ public class MainScreenController implements Initializable {
     
     //-------- RADIOBUTTON VIEW BY WEEK  --------//
 
-    @FXML private void onActionRbtByWeek(ActionEvent event) {
+    @FXML private void onActionRbtByWeek(ActionEvent event) { // REQUIREMENT D
         if (isWeekMonthDatePickerSelected == null) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Selection Missing");     
@@ -392,10 +417,9 @@ public class MainScreenController implements Initializable {
 
     //-------- RADIOBUTTON ALL  --------//
     
-    @FXML private void onActionRbtViewAll(ActionEvent event) {
+    @FXML private void onActionRbtViewAll(ActionEvent event) { // REQUIREMENT D
         DBQuery.appointmentList.clear();
         tableViewAppt.setItems(DBQuery.getAllAppointments());
-        rbViewAll.setSelected(false);
     }
 
     
@@ -437,7 +461,7 @@ public class MainScreenController implements Initializable {
     //-------- DISPLAY NUMBER OF APPOINTMENT TYPES BY MONTH --------//
     
     @FXML void onActionDisplayApptTypesByMonth(ActionEvent event) throws IOException {
-        DBQuery.getNumberOfApptTypesByMonth().clear();
+        DBQuery.getNumberOfApptTypesByMonth().clear(); // REQUIREMENT I
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_ApptTypesByMonth.fxml"));
         stage.setScene(new Scene(scene));
@@ -448,7 +472,7 @@ public class MainScreenController implements Initializable {
     //-------- DISPLAY APPOINTMENT TIMES BY MORNING AND AFTERNOON --------//
     
     @FXML void onActionDisplayApptFilteredByTime(ActionEvent event) throws IOException {
-        DBQuery.reportApptFilteredByTime().clear();
+        DBQuery.reportApptFilteredByTime().clear(); // REQUIREMENT I
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_ApptFilteredByTime.fxml"));
         stage.setScene(new Scene(scene));
@@ -459,7 +483,7 @@ public class MainScreenController implements Initializable {
     //-------- DISPLAY SCHEDULE FOR CONSULTANTS --------//
 
     @FXML void onActionDisplayConsultantSchedule(ActionEvent event) throws IOException {
-        DBQuery.reportGetAllAppointmentsByUser().clear();
+        DBQuery.reportGetAllAppointmentsByUser().clear(); // REQUIREMENT I
         stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
         scene = FXMLLoader.load(getClass().getResource("/View_Controller/Report_ConsultantSchedule.fxml"));
         stage.setScene(new Scene(scene));
@@ -479,7 +503,7 @@ public class MainScreenController implements Initializable {
 
 //-------- CHECK TEXTFIELDS --------//
     
-    public Boolean checkForBlankTextfields(String title, String description, int coType) {
+    public Boolean checkForBlankTextfields(String title, String description, int coType) { // REQUIREMENT F
         
         if (title.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
