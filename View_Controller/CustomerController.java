@@ -91,7 +91,7 @@ public class CustomerController implements Initializable {
     
     //-------- ADD NEW CUSTOMER --------//
     
-    @FXML private void onActionAddCus(ActionEvent event) {
+    @FXML private void onActionAddCus(ActionEvent event) { // REQUIREMENT B
 
         // User input textfields
         String name = txtName.getText();
@@ -124,7 +124,7 @@ public class CustomerController implements Initializable {
     
     //-------- UPDATE CUSTOMER --------//
     
-    @FXML private void onActionUpdateCus(ActionEvent event) {
+    @FXML private void onActionUpdateCus(ActionEvent event) { // REQUIREMENT B
         
         try {
             String customerId = txtCusId.getText();
@@ -150,14 +150,14 @@ public class CustomerController implements Initializable {
     
     //-------- DELETE CUSTOMER --------//
     
-    @FXML private void onActionDeleteCus(ActionEvent event) {
+    @FXML private void onActionDeleteCus(ActionEvent event) { // REQUIREMENT B
         
         Customer deleteCus = tableViewCustomer.getSelectionModel().getSelectedItem();
         String customerId = deleteCus.getCustomerId();
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Do you really want to delete this customer?");
         alert.setTitle("Delete Customer");
         
-        alert.showAndWait().ifPresent((response -> { // Lambda Expression used to confirm alert button response for customer deletion
+        alert.showAndWait().ifPresent((response -> { // Lambda Expression used to confirm alert button response for customer deletion // REQUIREMENT G
             if(response == ButtonType.OK) {
                 try{
                     DBQuery.deleteCustomer(customerId);           
