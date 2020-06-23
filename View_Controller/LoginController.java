@@ -73,7 +73,7 @@ public class LoginController implements Initializable {
     
     //-------- LOGIN BUTTON --------//
     
-    @FXML private void onActionLogin(ActionEvent event) throws IOException, SQLException {
+    @FXML private void onActionLogin(ActionEvent event) throws IOException, SQLException { // REQUIREMENT A
         // ResourceBundle added for error messages.
         rb = ResourceBundle.getBundle("Languages/Language", Locale.getDefault());
         
@@ -82,9 +82,9 @@ public class LoginController implements Initializable {
 
         try {
             if(DBQuery.checkLogin(userNameInput, passwordInput)) {                
-               DBQuery.user15MinApptReminder(userNameInput);
+               DBQuery.user15MinApptReminder(userNameInput); // REQUIREMENT H
                getCurrentUser();
-               getUserLoggingActivity();
+               getUserLoggingActivity(); // REQUIREMENT J
                
                stage = (Stage)((Button)event.getSource()).getScene().getWindow(); 
                scene = FXMLLoader.load(getClass().getResource("/View_Controller/MainScreen.fxml"));
@@ -113,7 +113,7 @@ public class LoginController implements Initializable {
     
     //-------- CREATE USER LOG --------//
     
-    public static void getUserLoggingActivity()  {        
+    public static void getUserLoggingActivity()  { // REQUIREMENT J       
         try{
             String fileName = "src/utils/userlog.txt";
             FileWriter fileWriter = new FileWriter(fileName, true);
@@ -128,7 +128,7 @@ public class LoginController implements Initializable {
     
     //-------- EXIT PROGRAM --------//    
     
-    @FXML private void onActionExit(ActionEvent event) {
+    @FXML private void onActionExit(ActionEvent event) { // REQUIREMENT A, G
         
         rb = ResourceBundle.getBundle("Languages/Language", Locale.getDefault());        
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
