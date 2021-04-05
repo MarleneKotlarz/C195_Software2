@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="430.0" prefWidth="431.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="View_Controller.Report_ApptTypesByMonth">
+   <children>
+      <Label layoutX="29.0" layoutY="59.0" text="Report: Number of appointment types by month">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Button layoutX="296.0" layoutY="346.0" mnemonicParsing="false" onAction="#onActionDisplayMain" prefHeight="25.0" prefWidth="91.0" text="Main Menu" />
+      <TableView fx:id="tableViewReportApptTypesByMonth" layoutX="48.0" layoutY="124.0" prefHeight="200.0" prefWidth="340.0">
+        <columns>
+          <TableColumn fx:id="colMonth" prefWidth="99.0" text="Month" />
+            <TableColumn fx:id="colTypeCount" prefWidth="99.0" text="Count" />
+          <TableColumn fx:id="colType" prefWidth="161.0" text="Type" />
+        </columns>
+      </TableView>
+   </children>
+</AnchorPane>

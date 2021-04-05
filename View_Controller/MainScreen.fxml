@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane id="AnchorPane" prefHeight="709.0" prefWidth="888.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="View_Controller.MainScreenController">
+   <children>
+      <SplitPane dividerPositions="0.8203677510608204" orientation="VERTICAL" prefHeight="466.0" prefWidth="683.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="93.0" prefWidth="836.0">
+               <children>
+                  <AnchorPane layoutX="355.0" layoutY="72.0" prefHeight="238.0" prefWidth="481.0">
+                     <children>
+                        <Label layoutX="17.0" layoutY="9.0" prefHeight="17.0" prefWidth="230.0" text="Appointment Information Managment" />
+                        <VBox layoutX="16.0" layoutY="56.0" prefHeight="134.0" prefWidth="62.0" spacing="10.0">
+                           <children>
+                              <Label text="Customer" />
+                              <Label text="Appt ID" />
+                              <Label text="Title" />
+                              <Label text="Description" />
+                           </children>
+                        </VBox>
+                        <VBox layoutX="129.0" layoutY="49.0" prefHeight="134.0" prefWidth="134.0" spacing="2.0">
+                           <children>
+                              <TextField fx:id="txtCustomer" disable="true" editable="false" prefHeight="25.0" prefWidth="129.0" />
+                              <TextField fx:id="txtApptID" disable="true" editable="false" text="AUTO - GEN" />
+                              <TextField fx:id="txtTitle" />
+                              <TextField fx:id="txtDescription" />
+                           </children>
+                           <padding>
+                              <Insets top="5.0" />
+                           </padding>
+                        </VBox>
+                        <Button layoutX="207.0" layoutY="206.0" mnemonicParsing="false" onAction="#onActionAddAppt" prefHeight="25.0" prefWidth="79.0" text="Add " />
+                        <VBox layoutX="298.0" layoutY="58.0" prefHeight="125.0" prefWidth="54.0" spacing="10.0">
+                           <children>
+                              <Label text="Type" />
+                              <Label text="Date" />
+                              <Label text="Start" />
+                              <Label text="End " />
+                           </children>
+                        </VBox>
+                        <VBox layoutX="355.0" layoutY="50.0" prefHeight="125.0" prefWidth="134.0" spacing="2.0">
+                           <children>
+                              <ComboBox fx:id="comboType" prefWidth="150.0" promptText="Choose Type" />
+                              <DatePicker fx:id="datePickerAppt" />
+                              <ComboBox fx:id="comboStart" prefWidth="150.0" promptText="Select Start Time" />
+                              <ComboBox fx:id="comboEnd" prefWidth="150.0" promptText="Select End Time" />
+                           </children>
+                           <padding>
+                              <Insets top="5.0" />
+                           </padding>
+                        </VBox>
+                        <Button layoutX="307.0" layoutY="206.0" mnemonicParsing="false" onAction="#onActionUpdateAppt" prefHeight="25.0" prefWidth="79.0" text="Update" />
+                        <TextField fx:id="txtCusId" disable="true" editable="false" layoutX="83.0" layoutY="54.0" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="35.0" />
+                        <Button layoutX="109.0" layoutY="206.0" mnemonicParsing="false" onAction="#onActionResetAppt" prefHeight="25.0" prefWidth="79.0" text="Reset" />
+                        <Button layoutX="409.0" layoutY="206.0" mnemonicParsing="false" onAction="#onActionDeleteAppt" prefHeight="25.0" prefWidth="79.0" text="Delete" />
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane layoutX="24.0" layoutY="122.0" minWidth="-Infinity" prefHeight="187.0" prefWidth="280.0">
+                     <children>
+                        <Button layoutX="201.0" layoutY="157.0" mnemonicParsing="false" onAction="#onActionSelectCustomer" prefHeight="25.0" prefWidth="50.0" text="Select" />
+                        <TableView fx:id="tableViewCustomer" layoutX="14.0" layoutY="36.0" prefHeight="111.0" prefWidth="241.0">
+                          <columns>
+                            <TableColumn fx:id="colCusId" prefWidth="75.0" text="CustomerId" />
+                            <TableColumn fx:id="colCusName" prefWidth="166.0" text="Name" />
+                          </columns>
+                        </TableView>
+                        <TextField fx:id="txtSearchCustomer" layoutX="14.0" layoutY="2.0" prefHeight="25.0" prefWidth="167.0" promptText="Enter customer name or ID" />
+                        <Button layoutX="201.0" layoutY="2.0" mnemonicParsing="false" onAction="#onActionSearchCustomer" text="Search" />
+                        <Button layoutX="131.0" layoutY="156.0" mnemonicParsing="false" onAction="#onActionResetCustomer" prefHeight="25.0" prefWidth="52.0" text="Reset" />
+                     </children>
+                  </AnchorPane>
+                  <HBox layoutX="262.0" layoutY="526.0" prefHeight="40.0" prefWidth="540.0" spacing="25.0">
+                     <children>
+                        <RadioButton fx:id="rbByMonth" mnemonicParsing="false" onAction="#onActionRbtByMonth" text="View by month">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="TG" />
+                           </toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="rbByWeek" mnemonicParsing="false" onAction="#onActionRbtByWeek" text="View by week" toggleGroup="$TG" />
+                        <RadioButton fx:id="rbViewAll" mnemonicParsing="false" onAction="#onActionRbtViewAll" text="View all" toggleGroup="$TG" />
+                        <DatePicker fx:id="datePickerView" onAction="#onActionDatePickerTableView" prefHeight="25.0" prefWidth="195.0" promptText="Select a date to view" />
+                     </children>
+                     <padding>
+                        <Insets top="10.0" />
+                     </padding>
+                  </HBox>
+                  <Text layoutX="37.0" layoutY="90.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Please select a customer in order to create a new appointment" wrappingWidth="195.0" />
+                  <Separator layoutX="-7.0" layoutY="313.0" prefHeight="17.0" prefWidth="886.0" AnchorPane.leftAnchor="-7.0" AnchorPane.rightAnchor="7.0" AnchorPane.topAnchor="313.0" />
+                  <Separator layoutX="1.0" layoutY="51.0" prefHeight="17.0" prefWidth="886.0" />
+                  <Label fx:id="labelTitle" layoutX="14.0" layoutY="11.0" prefHeight="40.0" prefWidth="360.0" text="Sunrise Appointment Scheduling System">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Label>
+                  <TableView fx:id="tableViewAppt" layoutX="41.0" layoutY="350.0" onMouseClicked="#onClickSetAppointment" prefHeight="165.0" prefWidth="806.0">
+                     <columns>
+                        <TableColumn fx:id="colApptId" prefWidth="67.0" text="Appt ID" />
+                        <TableColumn fx:id="colCustomerName" prefWidth="102.0" text="Customer" />
+                        <TableColumn fx:id="colTitle" prefWidth="122.0" text="Title" />
+                        <TableColumn fx:id="colDescription" prefWidth="134.0" text="Description" />
+                        <TableColumn fx:id="colType" prefWidth="126.0" text="Type" />
+                        <TableColumn fx:id="colStart" minWidth="0.0" prefWidth="122.0" text="Start" />
+                        <TableColumn fx:id="colEnd" prefWidth="129.0" text="End" />
+                        <TableColumn fx:id="colApptCusId" minWidth="0.0" prefWidth="2.0" text="CusId" />
+                     </columns>
+                  </TableView>
+                  <Separator layoutX="325.0" layoutY="59.0" orientation="VERTICAL" prefHeight="263.0" prefWidth="14.0" />
+                  <Button layoutX="761.0" layoutY="20.0" mnemonicParsing="false" onAction="#onActionLogout" prefHeight="25.0" prefWidth="85.0" text="Logout" />
+                  <Text layoutX="96.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Calendar View Options" />
+               </children>
+            </AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="96.0" prefWidth="836.0">
+               <children>
+                  <Button layoutX="84.0" layoutY="43.0" mnemonicParsing="false" onAction="#onActionDisplayCus" prefHeight="47.0" prefWidth="143.0" text="Customer" />
+                  <Button layoutX="478.0" layoutY="11.0" mnemonicParsing="false" onAction="#onActionDisplayApptTypesByMonth" prefHeight="25.0" prefWidth="280.0" text="Number of appointment types by month" />
+                  <Label layoutX="52.0" layoutY="11.0" text="Customer Information Managament" />
+                  <Label layoutX="361.0" layoutY="46.0" text="Report  Creation" />
+                  <Button layoutX="478.0" layoutY="83.0" mnemonicParsing="false" onAction="#onActionDisplayConsultantSchedule" prefHeight="25.0" prefWidth="280.0" text="Schedule for each consultant" />
+                  <Button layoutX="478.0" layoutY="47.0" mnemonicParsing="false" onAction="#onActionDisplayApptFilteredByTime" prefHeight="25.0" prefWidth="280.0" text="Appointments filter by morning and afternoon" />
+                  <Separator layoutX="325.0" layoutY="-1.0" orientation="VERTICAL" prefHeight="111.0" prefWidth="14.0" />
+               </children>
+            </AnchorPane>
+        </items>
+      </SplitPane>
+   </children>
+</AnchorPane>
